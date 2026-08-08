@@ -33,12 +33,19 @@ Other hard rules encoded here:
 | `storefront-page.html` | Shopify page-body build — **dark only**, scoped to `#s2fit`, matched to the GC theme. Not interchangeable with `index.html`. |
 | `data.js` | Source-of-truth data: hosts, verdicts, parts, prices, stock, product handles. |
 | `parts.json` | Original catalogue inventory scaffold. |
+| `storefront-v2-guided.html` | **Take 2 — Guided.** One question per screen, progress rail, 84px buttons at 22px type. Narrows 22 finishes to 3 material choices first. |
+| `storefront-v3-board.html` | **Take 3 — Board.** Both answers visible up front in two colour-coded columns; clicking opens a detail panel. No funnel. |
+
+All three builds read the same `HOSTS`/`SWITCHES` data block, so a data fix propagates by copying
+that block — it is duplicated inline in each file (Shopify page bodies cannot share an include).
 
 ## Where it's deployed
 
 | Surface | URL |
 |---|---|
 | Storefront (**unlinked test page**) | `/pages/convoy-s2-switch-finder` — Page id `gid://shopify/Page/157247963451` |
+| v2 &mdash; Guided (**unlinked**) | `/pages/convoy-s2-switch-finder-v2-guided` — Page id `gid://shopify/Page/157248454971` |
+| v3 &mdash; Board (**unlinked**) | `/pages/convoy-s2-switch-finder-v3-board` — Page id `gid://shopify/Page/157248487739` |
 | LAN | `http://192.168.13.131/s2-switch-guide/` |
 | Artifact | `https://claude.ai/code/artifact/103af8ab-b680-4861-82b1-c213e6787534` |
 
