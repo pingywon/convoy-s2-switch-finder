@@ -78,7 +78,13 @@ The published FAQ page **understates live inventory**:
 
 `data.js` is built from the live catalogue, so it is correct; the old page is not.
 
+## Scope
+
+This guide settles **the tail switch only**. Emitter, reflector and lens are options on the S2+
+product page itself — every build says so and links the customer there. Stock counts and running
+totals are deliberately **not** shown: stock moves, and the product page is authoritative.
+
 ## Updating
 
-Edit `storefront-page.html`, then `pageUpdate` against page id `157247963451`. Prices and stock in
-`data.js` are a point-in-time snapshot from 2026-08-08 — the product page is authoritative.
+Edit `storefront-page.html`, then `pageUpdate` against page id `157247963451`. Prices in `data.js` are a point-in-time snapshot from 2026-08-08. `stock` is still carried in the
+data but is no longer surfaced in any build.

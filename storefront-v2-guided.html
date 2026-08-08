@@ -212,8 +212,7 @@ function p2(){
    '<p class="qsub">Pick the one you own.</p><div class="bigs">'+
    n.map(function(h){return '<button class="big" type="button" data-h="'+h.id+'">'+
      '<span class="bchip" style="background:'+h.sw+'"></span>'+
-     '<span class="bmain">'+h.name+'<span class="bsub">'+money(h.price)+
-     (h.stock>0?' &middot; '+h.stock+' in stock':' &middot; out of stock')+'</span></span>'+
+     '<span class="bmain">'+h.name+'<span class="bsub">'+money(h.price)+'</span></span>'+
      '<span class="bdot '+h.verdict+'"></span></button>'}).join('')+'</div>'+
    '<div class="nav"><button class="btn" type="button" id="b2">&larr; Back to materials</button></div>';
   document.querySelectorAll('#p2 .big').forEach(function(b){
@@ -227,7 +226,7 @@ function p3(){
   if(v==="yes"){
     body='<p>Your <strong>'+h.name+'</strong> has a removable tail cap. Pick any <strong>one</strong> of three switches next.</p>';
   }else if(v==="no"){
-    var alts=HOSTS.filter(function(x){return x.verdict==="yes"&&x.stock>0}).slice(0,3);
+    var alts=HOSTS.filter(function(x){return x.verdict==="yes"}).slice(0,3);
     body='<p>The <strong>'+h.name+'</strong> tail switch is <strong>pressure-fit</strong> &mdash; pressed in at the '+
       'factory. It does not come out, and forcing it damages the cap.</p>'+
       '<p>You can still change the look with a <a href="'+u(PLAIN_BUTTONS.handle)+'" target="_blank" rel="noopener">'+
@@ -265,14 +264,15 @@ function p4(){
       (G.led===c[0])+'"><span class="chip" style="background:'+c[1]+'"></span><span>'+c[0]+'</span></button>'}).join('')+'</div>';
   }
   if(G.sw){
-    var tot=G.host.price,rows=[[G.host.name,G.host.price,G.host.handle,G.host.sw]];
-    var sp=ledPrice(G.sw,G.led);tot+=sp;
-    rows.push([G.sw.name+(G.led?" — "+G.led:""),sp,G.sw.handle,null]);
+    var rows=[[G.host.name,G.host.price,G.host.handle,G.host.sw]];
+    rows.push([G.sw.name+(G.led?" — "+G.led:""),ledPrice(G.sw,G.led),G.sw.handle,null]);
     h+='<div class="cart"><h3>Your parts</h3>'+rows.map(function(r){
       return '<a class="ln" href="'+u(r[2])+'" target="_blank" rel="noopener">'+
       (r[3]?'<span class="bchip" style="background:'+r[3]+'"></span>':'')+
       '<span class="lname">'+r[0]+'</span><span class="lp">'+money(r[1])+'</span></a>'}).join('')+
-      '<div class="tot"><span>Total</span><span>'+money(tot)+'</span></div></div>';
+      '<p style="font-size:15px;color:var(--ink-3);margin-top:16px;padding-top:16px;'+
+      'border-top:1px solid var(--line)">Emitter, reflector and lens are chosen on the S2+ '+
+      'product page &mdash; open the host link above to pick them.</p></div>';
   }
   h+='<div class="nav"><button class="btn" type="button" id="b4">&larr; Back to the answer</button>'+
      '<button class="btn" type="button" id="r4">Start over</button></div>';

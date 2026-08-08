@@ -215,7 +215,7 @@ function detail(){
   out+='<div class="dh '+v+'">'+ICON[v]+'<span>'+h.name+' &mdash; '+
     (v==='yes'?'yes, it fits':v==='no'?'no, it cannot':'not documented')+'</span></div>';
   if(v==='no'){
-    var alts=HOSTS.filter(function(x){return x.verdict==='yes'&&x.stock>0}).slice(0,3);
+    var alts=HOSTS.filter(function(x){return x.verdict==='yes'}).slice(0,3);
     out+='<p>This tail switch is <strong>pressure-fit</strong>. There is no switch upgrade path for it.</p>'+
      '<p>You can still change the look with a <a href="'+u(PLAIN_BUTTONS.handle)+'" target="_blank" rel="noopener">'+
      'coloured rubber tailcap button</a> ('+money(PLAIN_BUTTONS.price)+') &mdash; it does not light up.</p>'+
@@ -243,13 +243,15 @@ function detail(){
       '<span class="chip" style="background:'+c[1]+'"></span><span>'+c[0]+'</span></button>'}).join('')+'</div>';
   }
   if(B.sw){
-    var tot=h.price,rows=[[h.name,h.price,h.handle,h.sw]];
-    var sp=ledPrice(B.sw,B.led);tot+=sp;rows.push([B.sw.name+(B.led?' — '+B.led:''),sp,B.sw.handle,null]);
+    var rows=[[h.name,h.price,h.handle,h.sw]];
+    rows.push([B.sw.name+(B.led?' — '+B.led:''),ledPrice(B.sw,B.led),B.sw.handle,null]);
     out+='<div class="lbl">Your parts</div>'+rows.map(function(r){
       return '<a class="ln" href="'+u(r[2])+'" target="_blank" rel="noopener">'+
       (r[3]?'<span class="chip" style="background:'+r[3]+'"></span>':'')+
       '<span class="lname">'+r[0]+'</span><span class="lp">'+money(r[1])+'</span></a>'}).join('')+
-      '<div class="tot"><span>Total</span><span>'+money(tot)+'</span></div>';
+      '<p style="font-size:16px;color:var(--ink-3);margin-top:16px;padding-top:16px;'+
+      'border-top:1px solid var(--line)">Emitter, reflector and lens are chosen on the S2+ '+
+      'product page &mdash; open the host link above to pick them.</p>';
   }
   d.innerHTML=out;
   d.querySelectorAll('.scard').forEach(function(b){b.addEventListener('click',function(){

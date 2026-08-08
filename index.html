@@ -270,7 +270,7 @@ footer li{margin-bottom:5px}
   <div class="tablewrap">
     <table>
       <thead><tr><th scope="col">Finish</th><th scope="col">Family</th>
-        <th scope="col">Switch swap</th><th scope="col">Price</th><th scope="col">Stock</th></tr></thead>
+        <th scope="col">Switch swap</th><th scope="col">Price</th></tr></thead>
       <tbody id="matrix"></tbody>
     </table>
   </div>
@@ -285,11 +285,13 @@ footer li{margin-bottom:5px}
     <li>We have no published explanation for <em>why</em> the pressure-fit hosts differ, only that
       they do.</li>
     <li>Whether fitting the 18350 short tube changes any of this is undocumented.</li>
+    <li><strong>Emitter, reflector and lens are not chosen here.</strong> Those are options on the
+      S2+ product page itself &mdash; this guide only settles the tail switch.</li>
   </ul>
   <h3>Sources</h3>
   <p>Compatibility rules from the Convoy S2+ switch guide. Prices, stock levels and colour options
-    read live from the Gadget Connections catalogue on 8 August 2026 — the store carries more LED
-    and button colours than the original guide lists. Stock moves; the product page is authoritative.</p>
+    read from the Gadget Connections catalogue on 8 August 2026 — the store carries more LED and
+    button colours than the original guide lists. The product page is always authoritative.</p>
 </footer>
 </div>
 
@@ -416,15 +418,15 @@ function renderVerdict(){
     body = '<p>The <strong>' + h.name + '</strong> host has a removable tail cap. You can fit ' +
       'any <em>one</em> of the three switches below.</p>';
   } else if(v === "no"){
-    const alts = HOSTS.filter(x => x.verdict === "yes" && x.stock > 0).slice(0,4);
+    const alts = HOSTS.filter(x => x.verdict === "yes").slice(0,4);
     body = '<p>The <strong>' + h.name + '</strong> tail switch is <strong>pressure-fit</strong> — ' +
       'pressed into the tail cap at the factory and not designed to come out. There is no switch ' +
       'upgrade path for this host, and forcing it risks damaging the cap.</p>' +
       '<p>You can still change the look with a <a href="' + url(PLAIN_BUTTONS.handle) + '" ' +
       'target="_blank" rel="noopener">coloured rubber tailcap button</a> (' +
       money(PLAIN_BUTTONS.price) + '), which sits on the outside — but it will not light up.</p>' +
-      '<p style="margin-top:12px"><strong>Want a switch you can change?</strong> These hosts are in ' +
-      'stock and do accept swaps:</p><div class="links">' +
+      '<p style="margin-top:12px"><strong>Want a switch you can change?</strong> These hosts do ' +
+      'accept swaps:</p><div class="links">' +
       alts.map(a => '<a class="plink" href="' + url(a.handle) + '" target="_blank" rel="noopener">' +
         '<span class="chip" style="background:' + a.sw + '"></span>' +
         '<span class="pl-n">S2+ ' + a.name + '</span>' +
@@ -472,13 +474,10 @@ function renderConfig(){
   let html = "";
   if(S.sw.colors.length){
     html += '<div class="sub-h">LED colour · ' + S.sw.name + '</div><div class="opts">' +
-      S.sw.colors.map(c => {
-        const oos = c[2] === 0;
-        return '<button class="opt' + (oos ? " oos" : "") + '" type="button" data-led="' + c[0] +
-          '"' + (oos ? " disabled" : "") + ' aria-pressed="' + String(S.led === c[0]) + '">' +
-          '<span class="chip" style="background:' + c[1] + '"></span><span>' + c[0] +
-          (oos ? " — out of stock" : "") + '</span></button>';
-      }).join("") + '</div>';
+      S.sw.colors.map(c =>
+        '<button class="opt" type="button" data-led="' + c[0] + '" aria-pressed="' +
+        String(S.led === c[0]) + '"><span class="chip" style="background:' + c[1] +
+        '"></span><span>' + c[0] + '</span></button>').join("") + '</div>';
   }
   if(S.sw.id === "metal"){
     html += '<div class="sub-h">Centre button — optional</div>' +
@@ -547,15 +546,17 @@ function renderSheet(){
       'This host cannot take a switch. See the alternatives listed in step&nbsp;2.</p>';
     return;
   }
-  foot.innerHTML = '<div class="total"><span>Total</span><span>' + money(total) + '</span></div>' +
-    '<div class="links">' + links.map(l =>
+  foot.innerHTML = '<div class="links">' + links.map(l =>
       '<a class="plink" href="' + url(l[2]) + '" target="_blank" rel="noopener">' +
       (l[3] ? '<span class="chip" style="background:' + l[3] + '"></span>' : '') +
       '<span class="pl-n">' + l[0] + '</span><span class="pl-p">' + money(l[1]) + '</span></a>'
     ).join("") + '</div>' +
     (S.host.verdict === "yes" && !S.sw ?
       '<p style="font-size:12.5px;color:var(--ink-3);margin:12px 0 0;line-height:1.5">' +
-      'Choose a switch in step&nbsp;3 to complete the build.</p>' : '');
+      'Choose a switch in step&nbsp;3.</p>' : '') +
+    '<p style="font-size:12.5px;color:var(--ink-3);margin:12px 0 0;line-height:1.5;' +
+    'border-top:1px solid var(--line);padding-top:12px">Emitter, reflector and lens are chosen ' +
+    'on the S2+ product page &mdash; open the host link above to pick them.</p>';
 }
 
 /* ---------- reference matrix ---------- */
@@ -569,8 +570,7 @@ function renderMatrix(){
     '<a href="' + url(h.handle) + '" target="_blank" rel="noopener">' + h.name + '</a></span></td>' +
     '<td>' + h.group + '</td>' +
     '<td><span class="badge ' + h.verdict + '">' + ICON[h.verdict] + LABEL[h.verdict] + '</span></td>' +
-    '<td class="num-c">' + money(h.price) + '</td>' +
-    '<td class="num-c">' + (h.stock > 0 ? h.stock : "&mdash;") + '</td></tr>').join("");
+    '<td class="num-c">' + money(h.price) + '</td></tr>').join("");
 }
 
 /* ---------- init ---------- */
