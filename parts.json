@@ -1,0 +1,37 @@
+{
+  "_note": "Live GC catalog pull 2026-08-07. Prices/stock are point-in-time. Rules reference these by key.",
+  "base_url": "https://www.gadgetconnections.com/products/",
+  "hosts": {
+    "s2plus-alu":        {"title":"Convoy S2+ 18650 (aluminum)","handle":"convoy-s2","price":24.99,"colors":["Black","Blue","Green","Red","Orange","Purple","Tan","Silver","Cyan","Gray","Golden"],"stock":151},
+    "s2plus-mao":        {"title":"Convoy S2+ MAO (Micro Arc Oxidation)","handle":"convoy-s2-mao-finish-micro-arc-oxidation-18650-flashlight","price":33.99,"colors":["MAO"],"stock":6},
+    "s2plus-cu-litnit":  {"title":"Convoy S2+ Copper Cu (Litnit)","handle":"convoy-s2-18650-flashlight-litnit","price":59.99,"colors":["Copper"],"stock":3},
+    "s2plus-cu-glossy":  {"title":"Convoy S2+ Copper GLOSSY (no branding)","handle":"convoy-s2-18650-copper-glossy-cu-flashlight-litnit-copy","price":59.99,"colors":["Copper"],"stock":3},
+    "s2plus-ti":         {"title":"Convoy S2+ Titanium Ti","handle":"convoy-s2-18650-titanium-ti-flashlight","price":59.99,"colors":["Glossy","Stone Washed"],"stock":11},
+    "s2plus-ti-special": {"title":"Convoy S2+ Ti Specialty Finishes","handle":"convoy-s2-18650-titanium-ti-flashlight-specialty-finishes","price":69.99,"colors":["Gold Circuit","Multi-Color Circuit","Multi-Color Spatter"],"stock":8},
+    "s2plus-ti-green":   {"title":"Convoy S2+ Ti Green Circuit LIMITED","handle":"convoy-s2-18650-titanium-ti-flashlight-green-circuit-limited-edition","price":69.99,"colors":["Green Circuit"],"stock":0},
+    "s2plus-ti-purple":  {"title":"Convoy S2+ Ti Purple Swirl","handle":"convoy-s2-18650-titanium-ti-flashlight-purple-swirl","price":79.99,"colors":["Purple Swirl"],"stock":1},
+    "s2plus-brass":      {"title":"Convoy S2+ Brass","handle":"convoy-s2-18650-brass-flashlight","price":41.99,"colors":["Brass"],"stock":8},
+    "s2plus-uv365":      {"title":"Convoy S2+ UV 365nm (Nichia 276A)","handle":"convoy-s2-uv-365nm-nichia-emitter","price":34.99,"colors":["Black/Purple"],"stock":8}
+  },
+  "parts": {
+    "tube-18350":     {"title":"S2+ 18350 Short Battery Tube (all colors)","handle":"convoy-s2-18350-battery-tube"},
+    "gasket-body":    {"title":"S2+ Body Tube Gaskets 18650/18350 - 10pk","handle":"convoy-body-tube-gaskets-10-pack"},
+    "gasket-lens":    {"title":"S2+ Head End Lens Gaskets - 10pk","handle":"convoy-gasket-replacements"},
+    "gasket-emitter": {"title":"Convoy LED Emitter Gaskets","handle":"convoy-emitter-gaskets"},
+    "lens-ar":        {"title":"S2+/C8+ AR Coated Lens","handle":"convoy-s2-ar-coated-lens-replacement"},
+    "lens-tir":       {"title":"S2+ TIR Lens","handle":"convoy-s2-lens"},
+    "reflector":      {"title":"S2+ Reflectors Smooth & OP","handle":"convoy-s2-reflectors-smooth-op"},
+    "pcb-519a":       {"title":"S2+ 519A LED PCB (emitter upgrade)","handle":"convoy-s2-519-pcb-led"},
+    "driver-519a":    {"title":"S2+ 519A/SST40 Driver","handle":"convoy-s2-519a-sst40-driver"},
+    "switch-metal":   {"title":"Illuminated Tail Switch - METAL (S2+/S6/C8+)","handle":"convoy-s2-illuminated-tail-switch-button"},
+    "switch-rubber":  {"title":"Illuminated Tail Switch - RUBBER (S2+/S6/C8+)","handle":"convoy-illuminated-tail-switch-button-rubber"},
+    "clip":           {"title":"Pocket Clip (S2, S2+, M1, C8)","handle":"convoy-pocket-clip-for-s2-s2-m1-and-c8"},
+    "holster":        {"title":"Holsters (S2+/S3/4x18A/3x21A/C8+)","handle":"convoy-s2-s3-holster"},
+    "ring-tactical":  {"title":"Tactical Rings (S2+/C8+)","handle":"convoy-tactical-rings-for-s2-and-c8"},
+    "switch-remote":  {"title":"Remote Pressure Switch (S2+/C8/C8+)","handle":"convoy-remote-pressure-switch-s2-c8-c8"},
+    "filter-zwb2":    {"title":"S2+ ZWB2 Filter for UV 365nm","handle":"convoy-s2-zwb2-uv-filter-365nm"},
+    "lanyard":        {"title":"Convoy Lanyards - 4 Pack","handle":"convoy-lanyard-4x"},
+    "bundle-uv":      {"title":"S2+ UV Master Bundle","handle":"s2-uv-master-bundle"}
+  },
+  "rules": []
+}

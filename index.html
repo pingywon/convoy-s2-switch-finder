@@ -1,0 +1,591 @@
+<title>Convoy S2+ Tail Switch — Will It Fit?</title>
+<style>
+:root{
+  color-scheme:light;
+  --bg:#eef0f1; --surface:#f7f8f9; --surface-2:#e7eaec; --line:#d3d8dc;
+  --ink:#1b2023; --ink-2:#5b6469; --ink-3:#828b91;
+  --accent:#3f3a9e; --accent-soft:#e8e7f6; --accent-line:#b8b4e6;
+  --pass:#10603a; --pass-bg:#e3f3ea; --pass-line:#a8d5bd;
+  --block:#992018; --block-bg:#fbe7e5; --block-line:#eab4ad;
+  --unk:#75540a; --unk-bg:#fbf0d9; --unk-line:#e3c680;
+  --shadow:0 1px 2px rgba(20,28,34,.07),0 6px 18px -8px rgba(20,28,34,.16);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#0d1114; --surface:#161b1f; --surface-2:#1e252a; --line:#2c353b;
+  --ink:#e9eef1; --ink-2:#9aa4ab; --ink-3:#737d84;
+  --accent:#a29af7; --accent-soft:#20203a; --accent-line:#403c66;
+  --pass:#6ddaa5; --pass-bg:#12271e; --pass-line:#2e5b45;
+  --block:#ff9c90; --block-bg:#31191a; --block-line:#6b3330;
+  --unk:#eabf62; --unk-bg:#2b2211; --unk-line:#5c4a1f;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 22px -10px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0d1114; --surface:#161b1f; --surface-2:#1e252a; --line:#2c353b;
+  --ink:#e9eef1; --ink-2:#9aa4ab; --ink-3:#737d84;
+  --accent:#a29af7; --accent-soft:#20203a; --accent-line:#403c66;
+  --pass:#6ddaa5; --pass-bg:#12271e; --pass-line:#2e5b45;
+  --block:#ff9c90; --block-bg:#31191a; --block-line:#6b3330;
+  --unk:#eabf62; --unk-bg:#2b2211; --unk-line:#5c4a1f;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 22px -10px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:clamp(20px,4vw,44px) clamp(16px,3vw,28px) 80px}
+a{color:var(--accent)}
+h1,h2,h3{text-wrap:balance;margin:0}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 10px}
+
+/* header */
+header.top{border-bottom:1px solid var(--line);padding-bottom:26px;margin-bottom:30px}
+h1{font-size:clamp(27px,4.6vw,42px);line-height:1.1;letter-spacing:-.02em;font-weight:680}
+.sub{color:var(--ink-2);max-width:63ch;margin:14px 0 0;font-size:clamp(15px,1.7vw,17px)}
+.stat-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  padding:11px 15px;display:flex;align-items:baseline;gap:9px;box-shadow:var(--shadow)}
+.stat b{font-family:var(--mono);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.stat span{font-size:12.5px;color:var(--ink-2)}
+.stat.g b{color:var(--pass)} .stat.r b{color:var(--block)} .stat.a b{color:var(--unk)}
+
+/* layout */
+.layout{display:grid;grid-template-columns:1fr 316px;gap:34px;align-items:start}
+@media (max-width:940px){.layout{grid-template-columns:1fr;gap:24px}}
+
+/* steps */
+.step{background:var(--surface);border:1px solid var(--line);border-radius:4px;
+  padding:22px clamp(16px,2.4vw,26px);margin-bottom:20px;box-shadow:var(--shadow)}
+.step[hidden]{display:none}
+.step-h{display:flex;align-items:center;gap:11px;margin-bottom:5px}
+.num{font-family:var(--mono);font-size:11px;font-weight:600;width:23px;height:23px;flex:0 0 23px;
+  display:grid;place-items:center;border-radius:50%;background:var(--accent);color:#fff;letter-spacing:0}
+:root[data-theme="dark"] .num{color:#12121c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .num{color:#12121c}}
+.step h2{font-size:19px;letter-spacing:-.01em;font-weight:640}
+.step .lede{color:var(--ink-2);font-size:14.5px;margin:0 0 18px 34px}
+@media (max-width:560px){.step .lede{margin-left:0}}
+
+/* swatch grid */
+.grp{margin-bottom:20px}
+.grp:last-child{margin-bottom:0}
+.grp-t{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:9px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:8px}
+.sw{display:flex;align-items:center;gap:10px;padding:9px 11px;background:var(--bg);
+  border:1px solid var(--line);border-radius:3px;cursor:pointer;text-align:left;
+  font:inherit;color:var(--ink);transition:border-color .13s,transform .13s;width:100%}
+.sw:hover{border-color:var(--accent);transform:translateY(-1px)}
+.sw:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sw[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);
+  box-shadow:inset 0 0 0 1px var(--accent)}
+.chip{width:20px;height:20px;flex:0 0 20px;border-radius:3px;border:1px solid rgba(128,128,128,.42);
+  box-shadow:inset 0 -5px 8px -5px rgba(0,0,0,.5),inset 0 4px 6px -4px rgba(255,255,255,.35)}
+.sw-n{font-size:13px;line-height:1.3;flex:1;min-width:0}
+.dot{width:7px;height:7px;border-radius:50%;flex:0 0 7px}
+.dot.yes{background:var(--pass)} .dot.no{background:var(--block)} .dot.unknown{background:var(--unk)}
+
+/* verdict */
+.verdict{border-radius:4px;padding:18px 20px;border:1px solid;margin-bottom:20px}
+.verdict.yes{background:var(--pass-bg);border-color:var(--pass-line)}
+.verdict.no{background:var(--block-bg);border-color:var(--block-line)}
+.verdict.unknown{background:var(--unk-bg);border-color:var(--unk-line)}
+.v-h{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.v-icon{width:22px;height:22px;flex:0 0 22px}
+.v-t{font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.verdict.yes .v-t{color:var(--pass)} .verdict.no .v-t{color:var(--block)}
+.verdict.unknown .v-t{color:var(--unk)}
+.verdict p{margin:0 0 10px;font-size:14.5px;color:var(--ink)}
+.verdict p:last-child{margin-bottom:0}
+
+/* switch cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(212px,1fr));gap:11px}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:15px;
+  cursor:pointer;text-align:left;font:inherit;color:var(--ink);display:flex;flex-direction:column;
+  gap:8px;transition:border-color .13s,transform .13s}
+.card:hover{border-color:var(--accent);transform:translateY(-1px)}
+.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.card[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);
+  box-shadow:inset 0 0 0 1px var(--accent)}
+.card-t{font-weight:640;font-size:15px;display:flex;justify-content:space-between;
+  align-items:baseline;gap:8px}
+.card-p{font-family:var(--mono);font-size:13px;color:var(--accent);font-variant-numeric:tabular-nums}
+.card-d{font-size:13px;color:var(--ink-2);line-height:1.5;flex:1}
+.card-a{font-family:var(--mono);font-size:11px;color:var(--ink-3);padding-top:8px;
+  border-top:1px solid var(--line)}
+.tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;padding:2px 6px;border-radius:2px;border:1px solid}
+.tag.lit{color:var(--accent);border-color:var(--accent-line);background:var(--accent-soft)}
+.tag.nolit{color:var(--ink-3);border-color:var(--line);background:var(--surface-2)}
+
+/* xor note */
+.rule{display:flex;gap:11px;background:var(--surface-2);border:1px solid var(--line);
+  border-left:3px solid var(--accent);border-radius:3px;padding:12px 15px;margin:0 0 18px;
+  font-size:13.5px;color:var(--ink-2);line-height:1.55}
+.rule b{color:var(--ink)}
+
+/* build sheet */
+.sheet{position:sticky;top:18px;background:var(--surface);border:1px solid var(--line);
+  border-radius:4px;box-shadow:var(--shadow);overflow:hidden}
+@media (max-width:940px){.sheet{position:static}}
+.sheet-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--ink-3);padding:13px 16px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.sheet-b{padding:6px 16px 16px}
+.row{display:flex;justify-content:space-between;gap:12px;padding:11px 0;
+  border-bottom:1px dashed var(--line);font-size:13.5px;align-items:baseline}
+.row:last-of-type{border-bottom:none}
+.row dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-3);flex:0 0 auto}
+.row dd{margin:0;text-align:right;font-weight:560;min-width:0;word-break:break-word}
+.row dd.empty{color:var(--ink-3);font-weight:400;font-style:italic}
+.total{display:flex;justify-content:space-between;padding:13px 0 4px;margin-top:6px;
+  border-top:2px solid var(--ink);font-family:var(--mono);font-size:15px;font-weight:700;
+  font-variant-numeric:tabular-nums}
+.buy{display:block;margin-top:14px;padding:12px;background:var(--accent);color:#fff;
+  text-align:center;border-radius:3px;text-decoration:none;font-weight:620;font-size:14px;
+  transition:opacity .13s}
+:root[data-theme="dark"] .buy{color:#12121c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .buy{color:#12121c}}
+.buy:hover{opacity:.87}
+.buy.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent-line);margin-top:8px}
+.links{display:flex;flex-direction:column;gap:7px;margin-top:14px}
+.plink{display:flex;align-items:center;gap:9px;padding:9px 11px;background:var(--bg);
+  border:1px solid var(--line);border-radius:3px;text-decoration:none;color:var(--ink);
+  font-size:12.5px;transition:border-color .13s}
+.plink:hover{border-color:var(--accent)}
+.plink .pl-n{flex:1;line-height:1.35}
+.plink .pl-p{font-family:var(--mono);color:var(--accent);font-variant-numeric:tabular-nums}
+
+/* option chips */
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:7px}
+.opt{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);
+  border:1px solid var(--line);border-radius:3px;cursor:pointer;font:inherit;font-size:12.5px;
+  color:var(--ink);text-align:left;transition:border-color .13s}
+.opt:hover{border-color:var(--accent)}
+.opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);
+  box-shadow:inset 0 0 0 1px var(--accent)}
+.opt .chip{width:15px;height:15px;flex:0 0 15px}
+.oos{opacity:.45}
+.sub-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);margin:18px 0 9px}
+.sub-h:first-child{margin-top:0}
+
+/* table */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-3);background:var(--surface-2);position:sticky;top:0}
+tbody tr:last-child td{border-bottom:none}
+td.num-c{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;
+  font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:3px 8px;border-radius:2px;
+  border:1px solid;white-space:nowrap}
+.badge.yes{color:var(--pass);background:var(--pass-bg);border-color:var(--pass-line)}
+.badge.no{color:var(--block);background:var(--block-bg);border-color:var(--block-line)}
+.badge.unknown{color:var(--unk);background:var(--unk-bg);border-color:var(--unk-line)}
+.badge svg{width:11px;height:11px;flex:0 0 11px}
+.cellname{display:flex;align-items:center;gap:9px}
+
+section.ref{margin-top:44px}
+section.ref h2{font-size:22px;letter-spacing:-.01em;margin-bottom:6px}
+section.ref .lede2{color:var(--ink-2);font-size:14.5px;margin:0 0 18px;max-width:64ch}
+footer{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);
+  font-size:13px;color:var(--ink-2);line-height:1.65}
+footer h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:9px}
+footer ul{margin:0 0 16px;padding-left:19px}
+footer li{margin-bottom:5px}
+.reset{background:none;border:1px solid var(--line);border-radius:3px;color:var(--ink-2);
+  font:inherit;font-size:12.5px;padding:7px 13px;cursor:pointer;margin-left:auto}
+.reset:hover{border-color:var(--accent);color:var(--accent)}
+.reset:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <p class="eyebrow">Gadget Connections · Fitment Guide</p>
+  <h1>Will a new tail switch fit your Convoy&nbsp;S2+?</h1>
+  <p class="sub">Not every S2+ can take one. About half the finishes ship with a
+    <strong>pressure-fit tail</strong> that cannot be removed without damage — and the split doesn't
+    follow price or material the way you'd expect. Pick your finish and this tells you in one step.</p>
+  <div class="stat-row">
+    <div class="stat g"><b id="s-yes">0</b><span>finishes accept a swap</span></div>
+    <div class="stat r"><b id="s-no">0</b><span>are pressure-fit — cannot</span></div>
+    <div class="stat a"><b id="s-unk">0</b><span>undocumented</span></div>
+  </div>
+</header>
+
+<div class="layout">
+  <main>
+    <div class="step">
+      <div class="step-h"><span class="num">1</span><h2>Which S2+ do you have?</h2>
+        <button class="reset" id="reset" type="button">Start over</button></div>
+      <p class="lede">The tail switch is machined into the host, so compatibility is decided
+        entirely by the finish you own.</p>
+      <div id="grid"></div>
+    </div>
+
+    <div class="step" id="step-verdict" hidden>
+      <div class="step-h"><span class="num">2</span><h2>Your answer</h2></div>
+      <div id="verdict"></div>
+    </div>
+
+    <div class="step" id="step-switch" hidden>
+      <div class="step-h"><span class="num">3</span><h2>Choose one switch</h2></div>
+      <p class="lede">Your host takes exactly one of these three. They are mutually exclusive.</p>
+      <div class="rule"><span>&#9888;</span><span><b>Illuminated and forward clicky cannot be
+        combined.</b> There is no illuminated forward clicky in existence — choosing momentary
+        operation means giving up the glowing tail, and vice versa.</span></div>
+      <div class="cards" id="cards"></div>
+    </div>
+
+    <div class="step" id="step-config" hidden>
+      <div class="step-h"><span class="num">4</span><h2>Configure it</h2></div>
+      <div id="config"></div>
+    </div>
+  </main>
+
+  <aside>
+    <div class="sheet">
+      <div class="sheet-h">Your build</div>
+      <div class="sheet-b">
+        <dl id="sheet" style="margin:0"></dl>
+        <div id="sheet-foot"></div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<section class="ref">
+  <h2>Full compatibility matrix</h2>
+  <p class="lede2">Every S2+ finish currently in the catalogue. Sorted so the swappable hosts come
+    first. Note that the Titanium Specialty Finishes share one product page but do
+    <em>not</em> share one answer.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th scope="col">Finish</th><th scope="col">Family</th>
+        <th scope="col">Switch swap</th><th scope="col">Price</th><th scope="col">Stock</th></tr></thead>
+      <tbody id="matrix"></tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <h3>What this guide does not cover</h3>
+  <ul>
+    <li><strong>Ti Purple Swirl</strong> is absent from the manufacturer's compatibility list
+      entirely. We have not verified it either way, so it is marked undocumented rather than
+      guessed at — ask us before ordering a switch for one.</li>
+    <li>We have no published explanation for <em>why</em> the pressure-fit hosts differ, only that
+      they do.</li>
+    <li>Whether fitting the 18350 short tube changes any of this is undocumented.</li>
+  </ul>
+  <h3>Sources</h3>
+  <p>Compatibility rules from the Convoy S2+ switch guide. Prices, stock levels and colour options
+    read live from the Gadget Connections catalogue on 8 August 2026 — the store carries more LED
+    and button colours than the original guide lists. Stock moves; the product page is authoritative.</p>
+</footer>
+</div>
+
+<script>
+// Convoy S2+ tail-switch compatibility data
+// Compatibility source: https://www.gadgetconnections.com/pages/convoy-s2-faq
+// Pricing / stock / variants: live Shopify pull 2026-08-08
+const BASE = "https://www.gadgetconnections.com/products/";
+
+const HOSTS = [
+  // --- Anodized aluminium ---
+  {id:"black",  name:"Black",        group:"Anodized Aluminium", verdict:"yes", sw:"#1e2124", handle:"convoy-s2", variant:"Black",  price:24.99, stock:58},
+  {id:"gray",   name:"Gray",         group:"Anodized Aluminium", verdict:"yes", sw:"#7c8288", handle:"convoy-s2", variant:"Gray",   price:24.99, stock:5},
+  {id:"golden", name:"Golden",       group:"Anodized Aluminium", verdict:"yes", sw:"#b8912f", handle:"convoy-s2", variant:"Golden", price:24.99, stock:17},
+  {id:"blue",   name:"Blue",         group:"Anodized Aluminium", verdict:"no",  sw:"#20509a", handle:"convoy-s2", variant:"Blue",   price:24.99, stock:17},
+  {id:"green",  name:"Green",        group:"Anodized Aluminium", verdict:"no",  sw:"#1f6b3a", handle:"convoy-s2", variant:"Green",  price:24.99, stock:10},
+  {id:"red",    name:"Red",          group:"Anodized Aluminium", verdict:"no",  sw:"#9c2420", handle:"convoy-s2", variant:"Red",    price:24.99, stock:8},
+  {id:"orange", name:"Orange",       group:"Anodized Aluminium", verdict:"no",  sw:"#c25a1c", handle:"convoy-s2", variant:"Orange", price:24.99, stock:16},
+  {id:"purple", name:"Purple",       group:"Anodized Aluminium", verdict:"no",  sw:"#5b3a8e", handle:"convoy-s2", variant:"Purple", price:24.99, stock:6},
+  {id:"tan",    name:"Tan",          group:"Anodized Aluminium", verdict:"no",  sw:"#a58a63", handle:"convoy-s2", variant:"Tan",    price:24.99, stock:7},
+  {id:"silver", name:"Silver",       group:"Anodized Aluminium", verdict:"no",  sw:"#adb3b8", handle:"convoy-s2", variant:"Silver", price:24.99, stock:4},
+  {id:"cyan",   name:"Cyan",         group:"Anodized Aluminium", verdict:"no",  sw:"#1d8f9c", handle:"convoy-s2", variant:"Cyan",   price:24.99, stock:3},
+  // --- Specialty metals ---
+  {id:"mao",    name:"MAO (Stone White)", group:"Specialty Metal", verdict:"yes", sw:"#ddd8cf", handle:"convoy-s2-mao-finish-micro-arc-oxidation-18650-flashlight", variant:null, price:33.99, stock:6},
+  {id:"brass",  name:"Brass",        group:"Specialty Metal", verdict:"yes", sw:"#b08d3e", handle:"convoy-s2-18650-brass-flashlight", variant:null, price:41.99, stock:8},
+  {id:"cu",     canon:"cu", name:"Copper (Litnit)", group:"Specialty Metal", verdict:"yes", sw:"#a5673c", handle:"convoy-s2-18650-flashlight-litnit", variant:null, price:59.99, stock:3},
+  {id:"cugl",   canon:"cu", name:"Copper Glossy (unbranded)", group:"Specialty Metal", verdict:"yes", sw:"#bd7a45", handle:"convoy-s2-18650-copper-glossy-cu-flashlight-litnit-copy", variant:null, price:59.99, stock:3},
+  // --- Titanium ---
+  {id:"ti-gl",  name:"Ti Glossy",    group:"Titanium", verdict:"yes", sw:"#9aa0a6", handle:"convoy-s2-18650-titanium-ti-flashlight", variant:"Glossy", price:59.99, stock:5},
+  {id:"ti-sw",  name:"Ti Stone Washed", group:"Titanium", verdict:"yes", sw:"#868d94", handle:"convoy-s2-18650-titanium-ti-flashlight", variant:"Stone Washed", price:59.99, stock:6},
+  {id:"ti-gc",  name:"Ti Gold Circuit", group:"Titanium", verdict:"yes", sw:"#8d7a3f", handle:"convoy-s2-18650-titanium-ti-flashlight-specialty-finishes", variant:"Gold Circuit", price:69.99, stock:1},
+  {id:"ti-mc",  name:"Ti Multi-Color Circuit", group:"Titanium", verdict:"yes", sw:"#5e6f8a", handle:"convoy-s2-18650-titanium-ti-flashlight-specialty-finishes", variant:"Multi-Color Circuit", price:69.99, stock:4},
+  {id:"ti-sp",  name:"Ti Multi-Color Spatter", group:"Titanium", verdict:"no", sw:"#6b6f7d", handle:"convoy-s2-18650-titanium-ti-flashlight-specialty-finishes", variant:"Multi-Color Spatter", price:69.99, stock:3},
+  {id:"ti-grc", name:"Ti Green Circuit (LE)", group:"Titanium", verdict:"no", sw:"#4d6b52", handle:"convoy-s2-18650-titanium-ti-flashlight-green-circuit-limited-edition", variant:null, price:69.99, stock:0},
+  {id:"ti-ps",  name:"Ti Purple Swirl", group:"Titanium", verdict:"unknown", sw:"#6d5a86", handle:"convoy-s2-18650-titanium-ti-flashlight-purple-swirl", variant:null, price:79.99, stock:1}
+];
+
+const SWITCHES = [
+  {id:"rubber", name:"Rubber Illuminated", handle:"convoy-illuminated-tail-switch-button-rubber",
+   price:3.99, priceNote:"RGB $4.99", stock:196, lit:true,
+   pitch:"Brightest glow. Rubber diffuses the LED, so it shows noticeably more light than the metal version.",
+   action:"Reverse clicky — full click on, tap to change modes",
+   colors:[["Orange","#c25a1c",27],["Blue","#20509a",31],["Green","#1f6b3a",32],["Red","#9c2420",25],["Purple","#5b3a8e",16],["Pink","#c96792",19],["White","#e8e8e6",20],["RGB Slow Fade","linear-gradient(135deg,#9c2420,#b8912f,#1f6b3a,#20509a,#5b3a8e)",26]]},
+  {id:"metal", name:"Metal Illuminated", handle:"convoy-s2-illuminated-tail-switch-button",
+   price:4.99, priceNote:"RGB $5.25", stock:198, lit:true,
+   pitch:"Machined metal ring with a swappable centre button. Dimmer glow than rubber, but a harder, more tactile press.",
+   action:"Reverse clicky — full click on, tap to change modes",
+   colors:[["Orange","#c25a1c",37],["Blue","#20509a",28],["Green","#1f6b3a",27],["Red","#9c2420",15],["Purple","#5b3a8e",12],["Pink","#c96792",17],["White","#e8e8e6",37],["RGB Slow Fade","linear-gradient(135deg,#9c2420,#b8912f,#1f6b3a,#20509a,#5b3a8e)",25]]},
+  {id:"forward", name:"Forward Clicky", handle:"convoy-forward-clicky-switch-for-s2-full-pcb-assembly",
+   price:1.99, priceNote:"full PCB assembly", stock:36, lit:false,
+   pitch:"Momentary signalling without committing the light on. Cannot be illuminated — no illuminated forward clicky exists.",
+   action:"Half-press for momentary on, full click to stay on",
+   colors:[]}
+];
+
+const METAL_BUTTONS = {
+  handle:"convoy-black-button-for-metal-illuminated-switch", price:0.99,
+  colors:[["Silver Aluminum","#adb3b8",38],["Black","#1e2124",35],["Clear Plastic","#dfe4e6",38],["Blue","#20509a",37],["Cyan","#1d8f9c",38],["Deep Green","#1f5b39",39],["Gray","#7c8288",38],["Orange","#c25a1c",39],["Purple","#5b3a8e",38],["Red","#9c2420",36],["Tan","#a58a63",37]]
+};
+const BRASS_BUTTON = {handle:"convoy-brass-button-for-metal-illuminated-switch", price:1.99, stock:30, name:"Brass", sw:"#b08d3e"};
+const PLAIN_BUTTONS = {handle:"convoy-color-rubber-tail-cap-buttons-for-s2-c8-and-more", price:0.25,
+  colors:[["Black","#1e2124",33],["Orange","#c25a1c",42],["Green (does NOT glow)","#1f6b3a",40],["Blue (glow)","#20509a",31],["Translucent / White","#e8e8e6",21]]};
+
+/* ---------- icons ---------- */
+const ICON = {
+  yes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>',
+  no:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  unknown:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.1 9a3 3 0 1 1 4.5 2.6c-.9.5-1.6 1.3-1.6 2.4v.5"/><path d="M12 18.5h.01"/></svg>'
+};
+const LABEL = {yes:"Fits",no:"Cannot",unknown:"Unverified"};
+const url = h => BASE + h;
+const money = n => "$" + n.toFixed(2);
+
+/* ---------- state ---------- */
+let S = {host:null, sw:null, led:null, btn:null};
+
+function ledPrice(sw, led){
+  if(!led) return null;
+  const rgb = led.indexOf("RGB") === 0;
+  if(sw.id === "rubber") return rgb ? 4.99 : 3.99;
+  if(sw.id === "metal")  return rgb ? 5.25 : 4.99;
+  return sw.price;
+}
+
+/* ---------- step 1: swatch grid ---------- */
+function renderGrid(){
+  const groups = [];
+  HOSTS.forEach(h => {
+    let g = groups.find(x => x.name === h.group);
+    if(!g){ g = {name:h.group, items:[]}; groups.push(g); }
+    g.items.push(h);
+  });
+  const grid = document.getElementById("grid");
+  grid.innerHTML = groups.map(g =>
+    '<div class="grp"><div class="grp-t">' + g.name + '</div><div class="swatches">' +
+    g.items.map(h =>
+      '<button class="sw" type="button" data-id="' + h.id + '" aria-pressed="false">' +
+      '<span class="chip" style="background:' + h.sw + '"></span>' +
+      '<span class="sw-n">' + h.name + '</span>' +
+      '<span class="dot ' + h.verdict + '" title="' + LABEL[h.verdict] + '"></span>' +
+      '</button>').join("") +
+    '</div></div>').join("");
+  grid.querySelectorAll(".sw").forEach(b => {
+    b.addEventListener("click", () => pickHost(b.dataset.id));
+  });
+}
+
+function pickHost(id){
+  S = {host:HOSTS.find(h => h.id === id), sw:null, led:null, btn:null};
+  document.querySelectorAll(".sw").forEach(b =>
+    b.setAttribute("aria-pressed", String(b.dataset.id === id)));
+  renderVerdict(); renderCards(); renderConfig(); renderSheet();
+  document.getElementById("step-verdict").scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+/* ---------- step 2: verdict ---------- */
+function renderVerdict(){
+  const box = document.getElementById("step-verdict");
+  if(!S.host){ box.hidden = true; return; }
+  box.hidden = false;
+  const h = S.host, v = h.verdict;
+  let body;
+  if(v === "yes"){
+    body = '<p>The <strong>' + h.name + '</strong> host has a removable tail cap. You can fit ' +
+      'any <em>one</em> of the three switches below.</p>';
+  } else if(v === "no"){
+    const alts = HOSTS.filter(x => x.verdict === "yes" && x.stock > 0).slice(0,4);
+    body = '<p>The <strong>' + h.name + '</strong> tail switch is <strong>pressure-fit</strong> — ' +
+      'pressed into the tail cap at the factory and not designed to come out. There is no switch ' +
+      'upgrade path for this host, and forcing it risks damaging the cap.</p>' +
+      '<p>You can still change the look with a <a href="' + url(PLAIN_BUTTONS.handle) + '" ' +
+      'target="_blank" rel="noopener">coloured rubber tailcap button</a> (' +
+      money(PLAIN_BUTTONS.price) + '), which sits on the outside — but it will not light up.</p>' +
+      '<p style="margin-top:12px"><strong>Want a switch you can change?</strong> These hosts are in ' +
+      'stock and do accept swaps:</p><div class="links">' +
+      alts.map(a => '<a class="plink" href="' + url(a.handle) + '" target="_blank" rel="noopener">' +
+        '<span class="chip" style="background:' + a.sw + '"></span>' +
+        '<span class="pl-n">S2+ ' + a.name + '</span>' +
+        '<span class="pl-p">' + money(a.price) + '</span></a>').join("") + '</div>';
+  } else {
+    body = '<p>The <strong>' + h.name + '</strong> does not appear on the manufacturer\'s ' +
+      'compatibility list at all — neither as swappable nor as pressure-fit.</p>' +
+      '<p>We would rather tell you that than guess. Message us before buying a switch for this ' +
+      'host and we will open one to confirm.</p>';
+  }
+  document.getElementById("verdict").innerHTML =
+    '<div class="verdict ' + v + '"><div class="v-h"><span class="v-icon" style="color:var(--' +
+    (v === "yes" ? "pass" : v === "no" ? "block" : "unk") + ')">' + ICON[v] + '</span>' +
+    '<span class="v-t">' + (v === "yes" ? "Switch swap supported" :
+      v === "no" ? "No switch swap possible" : "Not documented") + '</span></div>' + body + '</div>';
+}
+
+/* ---------- step 3: switch cards ---------- */
+function renderCards(){
+  const box = document.getElementById("step-switch");
+  if(!S.host || S.host.verdict !== "yes"){ box.hidden = true; return; }
+  box.hidden = false;
+  document.getElementById("cards").innerHTML = SWITCHES.map(s =>
+    '<button class="card" type="button" data-id="' + s.id + '" aria-pressed="' +
+      String(S.sw && S.sw.id === s.id) + '">' +
+    '<span class="card-t"><span>' + s.name + '</span><span class="card-p">' + money(s.price) +
+      '</span></span>' +
+    '<span><span class="tag ' + (s.lit ? "lit" : "nolit") + '">' +
+      (s.lit ? "Illuminated" : "No light") + '</span></span>' +
+    '<span class="card-d">' + s.pitch + '</span>' +
+    '<span class="card-a">' + s.action + '</span></button>').join("");
+  document.querySelectorAll("#cards .card").forEach(b =>
+    b.addEventListener("click", () => {
+      S.sw = SWITCHES.find(s => s.id === b.dataset.id); S.led = null; S.btn = null;
+      renderCards(); renderConfig(); renderSheet();
+      document.getElementById("step-config").scrollIntoView({behavior:"smooth", block:"nearest"});
+    }));
+}
+
+/* ---------- step 4: configure ---------- */
+function renderConfig(){
+  const box = document.getElementById("step-config");
+  if(!S.sw){ box.hidden = true; return; }
+  box.hidden = false;
+  let html = "";
+  if(S.sw.colors.length){
+    html += '<div class="sub-h">LED colour · ' + S.sw.name + '</div><div class="opts">' +
+      S.sw.colors.map(c => {
+        const oos = c[2] === 0;
+        return '<button class="opt' + (oos ? " oos" : "") + '" type="button" data-led="' + c[0] +
+          '"' + (oos ? " disabled" : "") + ' aria-pressed="' + String(S.led === c[0]) + '">' +
+          '<span class="chip" style="background:' + c[1] + '"></span><span>' + c[0] +
+          (oos ? " — out of stock" : "") + '</span></button>';
+      }).join("") + '</div>';
+  }
+  if(S.sw.id === "metal"){
+    html += '<div class="sub-h">Centre button — optional</div>' +
+      '<p style="font-size:13.5px;color:var(--ink-2);margin:0 0 10px">Ships with a silver stainless ' +
+      'button. Swap it for any of these if you want.</p><div class="opts">' +
+      METAL_BUTTONS.colors.map(c =>
+        '<button class="opt" type="button" data-btn="' + c[0] + '" aria-pressed="' +
+        String(S.btn === c[0]) + '"><span class="chip" style="background:' + c[1] + '"></span>' +
+        '<span>' + c[0] + '</span></button>').join("") +
+      '<button class="opt" type="button" data-btn="Brass" aria-pressed="' +
+        String(S.btn === "Brass") + '"><span class="chip" style="background:' + BRASS_BUTTON.sw +
+        '"></span><span>Brass</span></button>' + '</div>';
+  }
+  if(S.sw.id === "forward"){
+    html += '<p style="font-size:14.5px;color:var(--ink-2);margin:0">Nothing to configure — the ' +
+      'forward clicky ships as a complete PCB assembly. Fit it and you are done.</p>';
+  }
+  document.getElementById("config").innerHTML = html;
+  document.querySelectorAll("#config .opt").forEach(b =>
+    b.addEventListener("click", () => {
+      if(b.dataset.led) S.led = (S.led === b.dataset.led) ? null : b.dataset.led;
+      if(b.dataset.btn) S.btn = (S.btn === b.dataset.btn) ? null : b.dataset.btn;
+      renderConfig(); renderSheet();
+    }));
+}
+
+/* ---------- build sheet ---------- */
+function renderSheet(){
+  const dl = document.getElementById("sheet");
+  const foot = document.getElementById("sheet-foot");
+  const row = (k, v, empty) =>
+    '<div class="row"><dt>' + k + '</dt><dd' + (empty ? ' class="empty"' : '') + '>' + v + '</dd></div>';
+  if(!S.host){
+    dl.innerHTML = row("Host", "not chosen", true) + row("Verdict", "&mdash;", true) +
+      row("Switch", "&mdash;", true);
+    foot.innerHTML = '<p style="font-size:12.5px;color:var(--ink-3);margin:14px 0 0;line-height:1.5">' +
+      'Pick a finish to begin. Your parts and running total appear here.</p>';
+    return;
+  }
+  let html = row("Host", S.host.name) +
+    row("Verdict", '<span class="badge ' + S.host.verdict + '">' + ICON[S.host.verdict] +
+      LABEL[S.host.verdict] + '</span>');
+  let total = 0, links = [];
+  links.push([S.host.name + (S.host.variant ? " — " + S.host.variant : ""), S.host.price,
+    S.host.handle, S.host.sw]);
+  total += S.host.price;
+  if(S.sw){
+    html += row("Switch", S.sw.name);
+    const p = ledPrice(S.sw, S.led) || S.sw.price;
+    if(S.sw.colors.length) html += row("LED", S.led || "not chosen", !S.led);
+    links.push([S.sw.name + (S.led ? " — " + S.led : ""), p, S.sw.handle, null]);
+    total += p;
+  } else if(S.host.verdict === "yes"){
+    html += row("Switch", "not chosen", true);
+  }
+  if(S.btn){
+    html += row("Button", S.btn);
+    const bp = S.btn === "Brass" ? BRASS_BUTTON.price : METAL_BUTTONS.price;
+    links.push(["Centre button — " + S.btn, bp,
+      S.btn === "Brass" ? BRASS_BUTTON.handle : METAL_BUTTONS.handle, null]);
+    total += bp;
+  }
+  dl.innerHTML = html;
+  if(S.host.verdict === "no"){
+    foot.innerHTML = '<p style="font-size:12.5px;color:var(--ink-2);margin:14px 0 0;line-height:1.5">' +
+      'This host cannot take a switch. See the alternatives listed in step&nbsp;2.</p>';
+    return;
+  }
+  foot.innerHTML = '<div class="total"><span>Total</span><span>' + money(total) + '</span></div>' +
+    '<div class="links">' + links.map(l =>
+      '<a class="plink" href="' + url(l[2]) + '" target="_blank" rel="noopener">' +
+      (l[3] ? '<span class="chip" style="background:' + l[3] + '"></span>' : '') +
+      '<span class="pl-n">' + l[0] + '</span><span class="pl-p">' + money(l[1]) + '</span></a>'
+    ).join("") + '</div>' +
+    (S.host.verdict === "yes" && !S.sw ?
+      '<p style="font-size:12.5px;color:var(--ink-3);margin:12px 0 0;line-height:1.5">' +
+      'Choose a switch in step&nbsp;3 to complete the build.</p>' : '');
+}
+
+/* ---------- reference matrix ---------- */
+function renderMatrix(){
+  const order = {yes:0, unknown:1, no:2};
+  const rows = HOSTS.slice().sort((a,b) =>
+    order[a.verdict] - order[b.verdict] || a.group.localeCompare(b.group) ||
+    a.name.localeCompare(b.name));
+  document.getElementById("matrix").innerHTML = rows.map(h =>
+    '<tr><td><span class="cellname"><span class="chip" style="background:' + h.sw + '"></span>' +
+    '<a href="' + url(h.handle) + '" target="_blank" rel="noopener">' + h.name + '</a></span></td>' +
+    '<td>' + h.group + '</td>' +
+    '<td><span class="badge ' + h.verdict + '">' + ICON[h.verdict] + LABEL[h.verdict] + '</span></td>' +
+    '<td class="num-c">' + money(h.price) + '</td>' +
+    '<td class="num-c">' + (h.stock > 0 ? h.stock : "&mdash;") + '</td></tr>').join("");
+}
+
+/* ---------- init ---------- */
+// Count distinct finish DESIGNATIONS, not listings: the two copper SKUs are one finish ("Cu").
+function countFinishes(v){
+  return new Set(HOSTS.filter(h => h.verdict === v).map(h => h.canon || h.id)).size;
+}
+document.getElementById("s-yes").textContent = countFinishes("yes");
+document.getElementById("s-no").textContent  = countFinishes("no");
+document.getElementById("s-unk").textContent = countFinishes("unknown");
+document.getElementById("reset").addEventListener("click", () => {
+  S = {host:null, sw:null, led:null, btn:null};
+  document.querySelectorAll(".sw").forEach(b => b.setAttribute("aria-pressed","false"));
+  renderVerdict(); renderCards(); renderConfig(); renderSheet();
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+renderGrid(); renderMatrix(); renderSheet();
+</script>
