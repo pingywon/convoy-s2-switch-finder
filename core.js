@@ -64,10 +64,25 @@ function canonCount(v){var s={},k;HOSTS.forEach(function(h){if(h.v===v)s[h.canon
    - full host + metal illuminated switch  -> yes (ring + centre, Double Clear possible)
    - pressure-fit host                     -> yes, centre button ONLY
    - anything else                          -> no                                */
+/* Which button family this build can swap:
+   'metal'  = metal centre button (metal illuminated switch, or a pressure-fit host)
+   'rubber' = coloured rubber tailcap button (rubber illuminated switch)
+   false    = none (forward clicky, or nothing picked yet)                        */
 function takesButton(){
   if(!S.host)return false;
-  if(S.host.v==="center")return true;
-  return !!(S.sw&&S.sw.takesButton);
+  if(S.host.v==="center")return "metal";
+  if(!S.sw)return false;
+  if(S.sw.takesButton)return "metal";
+  if(S.sw.id==="rubber")return "rubber";
+  return false;
+}
+function btnSet(){return takesButton()==="rubber"?RUBBTN:BTN}
+/* Rubber tailcap colours differ in how much light they pass. */
+function rubberGlow(n){
+  if(!n)return null;
+  if(n.indexOf("does NOT glow")>-1)return "none";
+  if(n.indexOf("Translucent")>-1)return "most";
+  return "some";
 }
 function canDoubleClear(){ return !!(S.host&&S.host.v==="full"&&S.sw&&S.sw.takesButton) }
 function isClear(name){ return name==="Clear Plastic" }
@@ -81,8 +96,19 @@ function glow(){
   }
   if(!S.sw)return null;
   if(!S.sw.lit)return {k:"none",t:"No light",d:"The forward clicky is not illuminated. Nothing on the tail will glow."};
-  if(S.sw.id==="rubber")return {k:"face",t:"Full face glow",
-    d:"Rubber diffuses the LED across the whole button — the most light of any option."};
+  if(S.sw.id==="rubber"){
+    var rg=S.btn?rubberGlow(S.btn[0]):null;
+    if(rg==="none")return {k:"none",t:"No glow",
+      d:"That rubber button is opaque — it does not glow. Pick translucent or another colour if you "+
+        "want to be able to find the light in the dark."};
+    if(rg==="most")return {k:"double",t:"Brightest glow",
+      d:"Translucent rubber passes the most light of any button. The easiest option to spot in a dark room."};
+    if(rg==="some")return {k:"face",t:"Full face glow",
+      d:"A coloured rubber button glows across its whole face, tinted to match. Darker colours pass "+
+        "less light than translucent."};
+    return {k:"face",t:"Full face glow",
+      d:"Rubber diffuses the LED across the whole button — more light than the metal switch."};
+  }
   if(!S.btn)return {k:"pick",t:"Pick a centre button",
     d:"The metal switch needs a centre button. Clear Plastic gives you Double Clear; anything else glows at the edge only."};
   if(isClear(S.btn[0]))return {k:"double",t:"DOUBLE CLEAR",
@@ -104,9 +130,10 @@ function lines(){
             pend:(S.sw.cols.length&&!S.led)});
   }
   if(S.btn){
-    var isBrass=S.btn[0]==="Brass";
-    L.push({n:"Centre button — "+S.btn[0],p:isBrass?BRASSBTN.p:BTN.p,vid:S.btn[2],
-            h:isBrass?BRASSBTN.h:BTN.h,sw:S.btn[1]});
+    var fam=takesButton(),isBrass=S.btn[0]==="Brass";
+    L.push({n:(fam==="rubber"?"Rubber button — ":"Centre button — ")+S.btn[0],
+            p:isBrass?BRASSBTN.p:(fam==="rubber"?RUBBTN.p:BTN.p),vid:S.btn[2],
+            h:isBrass?BRASSBTN.h:(fam==="rubber"?RUBBTN.h:BTN.h),sw:S.btn[1]});
   }
   return L;
 }

@@ -14,7 +14,6 @@ function hostBtn(h,extra){
    (S.host&&S.host.id===h.id)+'"'+(h.oos?' data-oos="1"':'')+'>'+
    '<span class="chip" style="background:'+h.sw+'"></span>'+
    '<span class="pn">'+h.n+(h.oos?' <em>sold out</em>':'')+'</span>'+
-   '<span class="pp">'+money(h.p)+'</span>'+
    '<span class="cap cap-'+h.v+'">'+(h.v==='full'?'Full switch':h.v==='center'?'Centre only':'Ask us')+'</span></button>';
 }
 function optBtn(cls,label,swatch,pressed,data,badge){
@@ -63,7 +62,7 @@ function render(){
      '<p>There is no illuminated forward clicky. Momentary operation means giving up the glowing tail.</p></div></div>'+
      '<div class="pgrid pgrid-3">'+SWITCHES.map(function(sw){
        return '<button class="pick swc" type="button" data-sw="'+sw.id+'" aria-pressed="'+(S.sw&&S.sw.id===sw.id)+'">'+
-        '<span class="swn">'+sw.n+'</span><span class="swp">'+money(sw.p)+'</span>'+
+        '<span class="swn">'+sw.n+'</span>'+
         '<span class="swt '+(sw.lit?'lit':'nolit')+'">'+(sw.lit?'Lights up':'No light')+'</span>'+
         '<span class="swd">'+sw.pitch+'</span><span class="swa">'+sw.act+'</span></button>'}).join('')+'</div>';
   }
@@ -75,27 +74,40 @@ function render(){
   var s3state = needLed?(S.led?'done':'active'):'lock';
   var s3note = needLed?(S.led?S.led[0]:'Choose a colour'):(S.sw&&!S.sw.lit?'Forward clicky has no LED':'Pick a switch first');
   var s3inner = needLed
-    ? '<div class="pgrid pgrid-s">'+S.sw.cols.map(function(c){
-        return optBtn('opt',c[0],c[1],(S.led&&S.led[0]===c[0]),'data-led="'+c[0]+'"',
-          c[3]!==S.sw.p?'<span class="pp">'+money(c[3])+'</span>':'')}).join('')+'</div>'
+    ? '<div class="msg msg-rule">'+ICO.warn+'<div><b>This glow is for finding the light in the dark.</b>'+
+      '<p>The lit tail is a locator, not a light source &mdash; it marks where the flashlight is on a '+
+      'bedside table or in a bag. It does not light the room. Some colours read brighter than others: '+
+      'white and translucent show most, deeper colours least.</p></div></div>'+
+      '<div class="pgrid pgrid-s">'+S.sw.cols.map(function(c){
+        return optBtn('opt',c[0],c[1],(S.led&&S.led[0]===c[0]),'data-led="'+c[0]+'"','')}).join('')+'</div>'
     : '<p class="lede">'+(S.sw&&!S.sw.lit?'The forward clicky is not illuminated, so there is no LED colour to pick.'
         :'Pick an illuminated switch above and the colours unlock.')+'</p>';
   out+=step(3,'Pick the LED colour',s3state,s3note,s3inner);
 
-  /* ---- 4. centre button ---- */
-  var need=takesButton();
-  var s4state = need?(S.btn?'done':'active'):'lock';
-  var s4note = need?(S.btn?S.btn[0]:'Choose a button'):'Only the metal switch takes one';
+  /* ---- 4. button (metal centre, or coloured rubber tailcap) ---- */
+  var fam=takesButton();
+  var s4state = fam?(S.btn?'done':'active'):'lock';
+  var s4title = fam==='rubber'?'Pick the rubber button':'Pick the centre button';
+  var s4note = fam?(S.btn?S.btn[0]:'Optional'):'Not available on this build';
   var s4inner;
-  if(!need){
+  if(!fam){
     s4inner='<p class="lede">'+(!h?'Pick a light first.':
-      S.sw&&S.sw.id==='rubber'?'The rubber switch is one moulded piece — there is no separate centre button.':
-      S.sw&&S.sw.id==='forward'?'The forward clicky has no illuminated centre button.':
-      'Choose the metal illuminated switch above to unlock the centre buttons.')+'</p>';
+      S.sw&&S.sw.id==='forward'?'The forward clicky has no illuminated button to swap.':
+      'Pick a switch above and the buttons unlock.')+'</p>';
+  }else if(fam==='rubber'){
+    s4inner='<div class="msg msg-rule">'+ICO.warn+'<div><b>Optional &mdash; your switch already ships with a button.</b>'+
+     '<p>These swap the rubber tailcap for a different colour. How much they glow varies a lot: '+
+     '<b>Translucent / White</b> passes the most light, and <b>Green does not glow at all</b>.</p></div></div>'+
+     '<div class="pgrid pgrid-s">'+RUBBTN.cols.map(function(c){
+       var g=rubberGlow(c[0]);
+       return optBtn('opt'+(g==='most'?' opt-star':''),c[0],c[1],(S.btn&&S.btn[0]===c[0]),
+         'data-btn="'+c[0]+'"',
+         g==='most'?'<span class="star">Brightest</span>':
+         g==='none'?'<span class="star star-off">No glow</span>':'')}).join('')+'</div>';
   }else{
     var dc=canDoubleClear();
     s4inner=(dc?'<div class="msg msg-dc"><div><b>Double Clear is available on this build.</b>'+
-      '<p>Pick <b>Clear Plastic</b> and you get a clear outer ring <i>and</i> a clear centre — both light up. '+
+      '<p>Pick <b>Clear Plastic</b> and you get a clear outer ring <i>and</i> a clear centre &mdash; both light up. '+
       'Any other colour blocks the middle and glows at the edge only, exactly like silver or black.</p></div></div>'
       :'<div class="msg msg-warn">'+ICO.warn+'<div><b>Centre button only.</b>'+
       '<p>The factory ring stays put on this finish, so you get glow around the edge whichever colour you pick. '+
@@ -104,10 +116,9 @@ function render(){
        var isC=c[3]&&dc;
        return optBtn('opt'+(isC?' opt-star':''),c[0],c[1],(S.btn&&S.btn[0]===c[0]),
          'data-btn="'+c[0]+'"',isC?'<span class="star">Double Clear</span>':'')}).join('')+
-       optBtn('opt',BRASSBTN.n,BRASSBTN.sw,(S.btn&&S.btn[0]==='Brass'),'data-btn="Brass"',
-         '<span class="pp">'+money(BRASSBTN.p)+'</span>')+'</div>';
+       optBtn('opt',BRASSBTN.n,BRASSBTN.sw,(S.btn&&S.btn[0]==='Brass'),'data-btn="Brass"','')+'</div>';
   }
-  out+=step(4,'Pick the centre button',s4state,s4note,s4inner);
+  out+=step(4,s4title,s4state,s4note,s4inner);
 
   /* ---- 5. result ---- */
   var L=lines(),rdy=ready();
@@ -119,7 +130,7 @@ function render(){
       return '<a class="part" href="'+purl(l.h)+'" target="_blank" rel="noopener">'+
        (l.sw?'<span class="chip" style="background:'+l.sw+'"></span>':'<span class="chip chip-x"></span>')+
        '<span class="pn">'+l.n+(l.pend?' <em>— choose a colour</em>':'')+(l.oos?' <em>— sold out</em>':'')+'</span>'+
-       '<span class="pp">'+money(l.p)+'</span></a>'}).join('')+'</div>'+
+       '</a>'}).join('')+'</div>'+
      '<p class="fine">Emitter, reflector and lens are chosen on the S2+ product page — open the light above to pick them.</p>';
   }
   out+=step(5,'Your build',rdy?'done':(L.length?'active':'lock'),rdy?'Ready':'',res);
@@ -146,7 +157,7 @@ function wire(){
   R.querySelectorAll('[data-btn]').forEach(function(b){b.addEventListener('click',function(){
     var k=b.dataset.btn,c;
     if(k==='Brass')c=['Brass',BRASSBTN.sw,BRASSBTN.vid,false];
-    else c=BTN.cols.filter(function(x){return x[0]===k})[0];
+    else c=btnSet().cols.filter(function(x){return x[0]===k})[0];
     S.btn=(S.btn&&S.btn[0]===c[0])?null:c; render()})});
 }
 render();

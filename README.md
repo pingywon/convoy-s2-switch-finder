@@ -88,18 +88,26 @@ The published FAQ page **understates live inventory**:
   switch **plus** the metal illuminated switch **plus** the `Clear Plastic` button. Bought together
   with the light, that is the lit-up Double Clear.
 - **Any other centre button** (silver, black, or any colour) blocks the middle → **edge glow only**.
-- Rubber illuminated is one moulded piece — no separate centre button, full-face glow.
+- Rubber illuminated takes no metal centre button, but its **rubber tailcap button swaps** via
+  `convoy-color-rubber-tail-cap-buttons-for-s2-c8-and-more` — a second option path.
+- **Rubber button colours differ in glow:** `Translucent / White` passes the most light;
+  `Green` does **not** glow at all. Both are called out in the UI.
 - Forward clicky never lights.
 
 Encoded in `core.js` as `takesButton()`, `canDoubleClear()` and `glow()`; unit-tested across 7
 cases including pressure-fit, sold-out and undocumented hosts.
 
+## What the glow is for
+
+The lit tail is a **locator** — it marks where the flashlight is on a bedside table or in a bag.
+It does not light a room, and the guide says so plainly rather than overselling it. Colour affects
+how easy it is to spot.
+
 ## Add to cart
 
 Builds a Shopify cart permalink — `/cart/<variantId>:1,<variantId>:1,…` — so one button loads the
 whole build. That is why `core.js` carries variant IDs, not just product handles. The button stays
-disabled until `ready()` passes (nothing pending, nothing sold out, host documented). No running
-total is shown; the cart page is authoritative.
+disabled until `ready()` passes (nothing pending, nothing sold out, host documented). **No prices are shown anywhere in the UI** — the cart and product pages are authoritative.
 
 ## Scope
 
