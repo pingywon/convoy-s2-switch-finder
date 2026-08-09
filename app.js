@@ -129,8 +129,13 @@ function render(){
     s2inner='<div class="msg msg-rule">'+ICO.warn+'<div><b>Pick one — they are mutually exclusive.</b>'+
      '<p>There is no illuminated forward clicky. Momentary operation means giving up the glowing tail.</p></div></div>'+
      '<div class="pgrid pgrid-3">'+SWITCHES.map(function(sw){
-       return '<button class="pick swc" type="button" data-sw="'+sw.id+'" aria-pressed="'+(S.sw&&S.sw.id===sw.id)+'">'+
-        '<span class="swn">'+sw.n+'</span>'+
+       /* live preview: shows how THIS switch actually lights, in the chosen colour */
+       var lc=(S.sw&&S.sw.id===sw.id&&S.led)?S.led[1]:'#7fe9c4';
+       var mode=sw.id==='rubber'?'face':(sw.id==='metal'?(S.btn&&isClear(S.btn[0])?'both':'ring'):'off');
+       var viz='<span class="tailviz tv-'+mode+'" style="--ledc:'+lc+'" aria-hidden="true">'+
+               '<span class="tv-ring"></span><span class="tv-mid"></span></span>';
+       return '<button class="pick swc lit-'+mode+'" type="button" data-sw="'+sw.id+'" aria-pressed="'+(S.sw&&S.sw.id===sw.id)+'">'+
+        viz+'<span class="swn">'+sw.n+'</span>'+
         '<span class="swt '+(sw.lit?'lit':'nolit')+'">'+(sw.lit?'Lights up':'No light')+'</span>'+
         '<span class="swd">'+sw.pitch+'</span><span class="swa">'+sw.act+'</span></button>'}).join('')+'</div>';
   }
@@ -147,7 +152,9 @@ function render(){
       'bedside table or in a bag. It does not light the room. Some colours read brighter than others: '+
       'white and translucent show most, deeper colours least.</p></div></div>'+
       '<div class="pgrid pgrid-s">'+S.sw.cols.map(function(c){
-        return optBtn('opt',c[0],c[1],(S.led&&S.led[0]===c[0]),'data-led="'+c[0]+'"','')}).join('')+'</div>'
+        return '<button class="pick opt ledopt" type="button" data-led="'+c[0]+'" aria-pressed="'+
+          (S.led&&S.led[0]===c[0])+'" style="--ledc:'+c[1]+'">'+
+          '<span class="leddot"></span><span class="pn">'+c[0]+'</span></button>'}).join('')+'</div>'
     : '<p class="lede">'+(S.sw&&!S.sw.lit?'The forward clicky is not illuminated, so there is no LED colour to pick.'
         :'Pick an illuminated switch above and the colours unlock.')+'</p>';
   out+=step(5,'Pick the LED colour',s3state,s3note,s3inner);

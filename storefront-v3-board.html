@@ -187,6 +187,54 @@
 #s2c .tagplain{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;
  padding:3px 8px;border-radius:4px;border:1px solid var(--ln);background:var(--sf2);
  color:var(--ink3);white-space:nowrap}
+
+/* ===== the lit-switch step, actually lit =====
+   A CSS-drawn tail cap per card: machined ring + centre button. Each switch
+   glows the way it really does — rubber over the whole face, metal at the ring,
+   both when a clear centre is fitted. Colour follows the chosen LED. */
+#s2c .swc{position:relative;overflow:hidden}
+#s2c .swc::before{content:"";position:absolute;inset:-40% -30% auto -30%;height:170%;
+ background:radial-gradient(60% 55% at 50% 0%,color-mix(in srgb,var(--ledc,#7fe9c4) 26%,transparent),transparent 72%);
+ opacity:0;transition:opacity .35s;pointer-events:none}
+#s2c .swc.lit-face::before,#s2c .swc.lit-ring::before,#s2c .swc.lit-both::before{opacity:.5}
+#s2c .swc[aria-pressed="true"]::before{opacity:1}
+#s2c .swc>*{position:relative;z-index:1}
+#s2c .tailviz{--ledc:#7fe9c4;width:78px;height:78px;flex:0 0 78px;border-radius:50%;
+ position:relative;align-self:center;margin-bottom:6px;
+ background:radial-gradient(circle at 34% 28%,#3a444e,#161c22 62%,#0b1116);
+ box-shadow:inset 0 2px 3px rgba(255,255,255,.14),inset 0 -5px 9px rgba(0,0,0,.65),0 3px 10px rgba(0,0,0,.5)}
+#s2c .tv-ring,#s2c .tv-mid{position:absolute;border-radius:50%;transition:box-shadow .3s,background .3s}
+#s2c .tv-ring{inset:9px}
+#s2c .tv-mid{inset:26px;background:#2a333c;box-shadow:inset 0 2px 3px rgba(255,255,255,.12)}
+/* rubber: the whole face lights */
+#s2c .tv-face .tv-ring{background:radial-gradient(circle,var(--ledc) 0%,color-mix(in srgb,var(--ledc) 55%,transparent) 70%,transparent 100%);
+ box-shadow:0 0 20px 5px color-mix(in srgb,var(--ledc) 62%,transparent);animation:s2pulse 2.8s ease-in-out infinite}
+#s2c .tv-face .tv-mid{background:color-mix(in srgb,var(--ledc) 78%,#fff 12%);
+ box-shadow:0 0 16px 3px color-mix(in srgb,var(--ledc) 60%,transparent)}
+/* metal: the clear outer ring lights, centre stays solid */
+#s2c .tv-ring .tv-ring{display:none}
+#s2c .tv-ring2{display:none}
+#s2c .tailviz.tv-ring .tv-ring{border:5px solid var(--ledc);background:transparent;
+ box-shadow:0 0 18px 3px color-mix(in srgb,var(--ledc) 58%,transparent),
+ inset 0 0 12px color-mix(in srgb,var(--ledc) 45%,transparent);animation:s2pulse 2.8s ease-in-out infinite}
+/* metal + clear centre: ring AND middle light */
+#s2c .tailviz.tv-both .tv-ring{border:5px solid var(--ledc);background:transparent;
+ box-shadow:0 0 20px 4px color-mix(in srgb,var(--ledc) 62%,transparent),
+ inset 0 0 14px color-mix(in srgb,var(--ledc) 50%,transparent);animation:s2pulse 2.8s ease-in-out infinite}
+#s2c .tailviz.tv-both .tv-mid{background:radial-gradient(circle,#fff 0%,var(--ledc) 62%);
+ box-shadow:0 0 18px 4px color-mix(in srgb,var(--ledc) 70%,transparent)}
+/* forward clicky: dark, deliberately */
+#s2c .tailviz.tv-off .tv-ring{border:5px solid #313b45;background:transparent}
+@keyframes s2pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.4)}}
+/* LED colour swatches show the actual glow */
+#s2c .ledopt{--ledc:#7fe9c4}
+#s2c .leddot{width:26px;height:26px;flex:0 0 26px;border-radius:50%;background:var(--ledc);
+ box-shadow:0 0 12px 2px color-mix(in srgb,var(--ledc) 65%,transparent),inset 0 -3px 5px rgba(0,0,0,.35)}
+#s2c .ledopt[aria-pressed="true"] .leddot{box-shadow:0 0 20px 5px color-mix(in srgb,var(--ledc) 80%,transparent),
+ inset 0 -3px 5px rgba(0,0,0,.35)}
+@media (prefers-reduced-motion:reduce){
+  #s2c .tv-face .tv-ring,#s2c .tailviz.tv-ring .tv-ring,#s2c .tailviz.tv-both .tv-ring{animation:none}
+}
 </style>
 <div id="s2c">
 <div class="hero"><div class="kick" style="font-family:var(--mono);font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--ok);margin-bottom:12px">// Convoy S2+ · Switch &amp; button builder</div><h2 style="font-size:clamp(30px,5.2vw,46px);line-height:1.05;letter-spacing:-.03em;font-weight:800;margin:0 0 14px">Find your light, then build the switch</h2><p style="font-size:19px;color:var(--ink2);max-width:62ch;margin:0 0 28px">Your finish decides everything. Find it in the correct column below and the rest of the build unlocks.</p></div>
@@ -552,8 +600,13 @@ function render(){
     s2inner='<div class="msg msg-rule">'+ICO.warn+'<div><b>Pick one — they are mutually exclusive.</b>'+
      '<p>There is no illuminated forward clicky. Momentary operation means giving up the glowing tail.</p></div></div>'+
      '<div class="pgrid pgrid-3">'+SWITCHES.map(function(sw){
-       return '<button class="pick swc" type="button" data-sw="'+sw.id+'" aria-pressed="'+(S.sw&&S.sw.id===sw.id)+'">'+
-        '<span class="swn">'+sw.n+'</span>'+
+       /* live preview: shows how THIS switch actually lights, in the chosen colour */
+       var lc=(S.sw&&S.sw.id===sw.id&&S.led)?S.led[1]:'#7fe9c4';
+       var mode=sw.id==='rubber'?'face':(sw.id==='metal'?(S.btn&&isClear(S.btn[0])?'both':'ring'):'off');
+       var viz='<span class="tailviz tv-'+mode+'" style="--ledc:'+lc+'" aria-hidden="true">'+
+               '<span class="tv-ring"></span><span class="tv-mid"></span></span>';
+       return '<button class="pick swc lit-'+mode+'" type="button" data-sw="'+sw.id+'" aria-pressed="'+(S.sw&&S.sw.id===sw.id)+'">'+
+        viz+'<span class="swn">'+sw.n+'</span>'+
         '<span class="swt '+(sw.lit?'lit':'nolit')+'">'+(sw.lit?'Lights up':'No light')+'</span>'+
         '<span class="swd">'+sw.pitch+'</span><span class="swa">'+sw.act+'</span></button>'}).join('')+'</div>';
   }
@@ -570,7 +623,9 @@ function render(){
       'bedside table or in a bag. It does not light the room. Some colours read brighter than others: '+
       'white and translucent show most, deeper colours least.</p></div></div>'+
       '<div class="pgrid pgrid-s">'+S.sw.cols.map(function(c){
-        return optBtn('opt',c[0],c[1],(S.led&&S.led[0]===c[0]),'data-led="'+c[0]+'"','')}).join('')+'</div>'
+        return '<button class="pick opt ledopt" type="button" data-led="'+c[0]+'" aria-pressed="'+
+          (S.led&&S.led[0]===c[0])+'" style="--ledc:'+c[1]+'">'+
+          '<span class="leddot"></span><span class="pn">'+c[0]+'</span></button>'}).join('')+'</div>'
     : '<p class="lede">'+(S.sw&&!S.sw.lit?'The forward clicky is not illuminated, so there is no LED colour to pick.'
         :'Pick an illuminated switch above and the colours unlock.')+'</p>';
   out+=step(5,'Pick the LED colour',s3state,s3note,s3inner);
