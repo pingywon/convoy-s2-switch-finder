@@ -137,6 +137,40 @@
 
 #s2c .stp:first-child .sb{padding:18px}
 #s2c .cwl .pick{background:var(--sf)}
+
+/* ===== late overrides (appended at end of stylesheet, always applied) ===== */
+#s2c .btnlink{background:none;border:none;color:var(--ac);font:inherit;font-size:16px;font-weight:700;cursor:pointer;padding:10px 0;text-decoration:underline}
+#s2c .opticwrap{display:contents}
+#s2c .acc{display:block;width:100%;text-align:left;margin-top:14px;padding:16px 18px;background:var(--sf2);
+ border:2px dashed var(--ln);border-radius:8px;cursor:pointer;font:inherit;color:var(--ink)}
+#s2c .acc:hover{border-color:var(--ac);border-style:solid}
+#s2c .acc:focus-visible{outline:3px solid var(--ac);outline-offset:3px}
+#s2c .accchev{display:inline-block;width:24px;color:var(--ac);font-size:19px;vertical-align:baseline}
+#s2c .acctxt{font-size:18px;font-weight:800}
+#s2c .accsub{display:block;margin-left:24px;font-size:14.5px;color:var(--ink3);margin-top:4px;line-height:1.45}
+#s2c .confirmrow{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:18px;padding:16px 18px;
+ background:var(--acs);border:2px solid var(--acl);border-radius:8px}
+#s2c .confirmrow p{flex:1;min-width:220px;font-size:16px;color:var(--ink2);margin:0}
+#s2c .btn.go{background:var(--ok);color:#070d13;border-color:var(--ok);font-weight:800}
+#s2c .btn.go:hover{opacity:.88;color:#070d13}
+#s2c .stp.justmoved{box-shadow:0 0 0 6px var(--acs),0 0 0 8px var(--ac)}
+#s2c .ackwrap{margin-top:24px;border:3px solid var(--wnl);border-radius:12px;overflow:hidden;background:var(--wnb)}
+#s2c .ackwrap.on{border-color:var(--ok);background:var(--okb)}
+#s2c .ackhead{padding:15px 20px;font-size:20px;font-weight:800;background:rgba(0,0,0,.3);color:var(--wn)}
+#s2c .ackwrap.on .ackhead{color:var(--ok)}
+#s2c .ackbox{display:flex;gap:18px;align-items:flex-start;padding:24px 20px;cursor:pointer;font-size:19px;
+ line-height:1.5;color:var(--ink);font-weight:600;margin:0}
+#s2c .ackbox input{width:34px;height:34px;flex:0 0 34px;margin-top:2px;accent-color:var(--ok);cursor:pointer}
+#s2c .nickrow{margin-top:20px}
+#s2c .nickrow label{display:block;font-size:16px;font-weight:700;margin-bottom:8px}
+#s2c .nickrow label em{font-style:normal;font-weight:400;color:var(--ink3)}
+#s2c .nickrow input{width:100%;padding:14px 16px;font:inherit;font-size:18px;border-radius:8px;
+ background:var(--bg);border:2px solid var(--ln);color:var(--ink)}
+#s2c .nickrow input:focus{outline:none;border-color:var(--ac)}
+#s2c .buildtag{margin-top:14px;padding:14px 16px;border-radius:8px;background:var(--sf2);
+ border-left:4px solid var(--ok);font-size:16px;color:var(--ink)}
+#s2c .buildtag b{color:var(--ok)}
+#s2c .buildtag span{display:block;font-size:14.5px;color:var(--ink3);margin-top:5px;line-height:1.45}
 </style>
 <div id="s2c">
 <div class="hero"><div class="kick" style="font-family:var(--mono);font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--ok);margin-bottom:12px">// Convoy S2+ · Switch &amp; button builder</div><h2 style="font-size:clamp(30px,5.2vw,46px);line-height:1.05;letter-spacing:-.03em;font-weight:800;margin:0 0 14px">Find your light, then build the switch</h2><p style="font-size:19px;color:var(--ink2);max-width:62ch;margin:0 0 28px">Your finish decides everything. Find it in the correct column below and the rest of the build unlocks.</p></div>
@@ -236,8 +270,21 @@ function suggestRefl(v){
   return "Default";
 }
 
+/* Build identity — so a cart holding several lights can be told apart.
+   Every line of one build carries the same "Build" property. */
+function buildNo(){
+  try{var n=parseInt(sessionStorage.getItem("gcS2BuildNo")||"1",10);return isNaN(n)?1:n}
+  catch(e){return 1}
+}
+function bumpBuildNo(){try{sessionStorage.setItem("gcS2BuildNo",String(buildNo()+1))}catch(e){}}
+function buildTag(){
+  if(!S.host)return null;
+  var base="Build "+buildNo()+" — "+S.host.n+(S.em?" · "+S.em:"");
+  return S.nick?("Build "+buildNo()+" — "+S.nick+" ("+S.host.n+(S.em?" · "+S.em:"")+")"):base;
+}
+
 /* ---------------- rule engine ---------------- */
-var S={host:null,em:null,refl:null,optic:null,ack:false,sw:null,led:null,btn:null};
+var S={host:null,em:null,refl:null,optic:null,beamOK:false,ack:false,sw:null,led:null,btn:null,nick:''};
 function money(n){return "$"+n.toFixed(2)}
 function purl(h){return P+h}
 function canonCount(v){var s={},k;HOSTS.forEach(function(h){if(h.v===v)s[h.canon||h.id]=1});
@@ -310,7 +357,7 @@ function lines(){
       if(S.sw)pr["Install service"]="Yes - install the "+S.sw.n+" I am buying with this light";
       if(S.ack)pr["Build acknowledgement"]="Accepted - non-returnable custom build";
     }
-    L.push({n:"Convoy S2+ - "+S.host.n,p:S.host.p,vid:S.host.vid,h:S.host.h,sw:S.host.sw,
+    L.push({role:"The light",n:"Convoy S2+ - "+S.host.n,p:S.host.p,vid:S.host.vid,h:S.host.h,sw:S.host.sw,
             oos:!!S.host.oos,props:pr,
             sub:S.em?(S.em+" · "+(S.refl||"Default")+" · "+(S.optic||"Default (Glass)")):null});
   }
@@ -318,20 +365,26 @@ function lines(){
     var p=S.sw.p,vid=null;
     if(S.sw.cols.length){ if(S.led){p=S.led[3];vid=S.led[2];} }
     else vid="50172242526523";
-    L.push({n:S.sw.n+(S.led?" — "+S.led[0]:""),p:p,vid:vid,h:S.sw.h,sw:null,
+    L.push({role:"Tail switch for this light",n:S.sw.n+(S.led?" — "+S.led[0]:""),p:p,vid:vid,h:S.sw.h,sw:null,
             pend:(S.sw.cols.length&&!S.led)});
   }
   if(S.btn){
     var fam=takesButton(),isBrass=S.btn[0]==="Brass";
-    L.push({n:(fam==="rubber"?"Rubber button — ":"Centre button — ")+S.btn[0],
+    L.push({role:(fam==="rubber"?"Rubber button for this light":"Centre button for this light"),n:(fam==="rubber"?"Rubber button — ":"Centre button — ")+S.btn[0],
             p:isBrass?BRASSBTN.p:(fam==="rubber"?RUBBTN.p:BTN.p),vid:S.btn[2],
             h:isBrass?BRASSBTN.h:(fam==="rubber"?RUBBTN.h:BTN.h),sw:S.btn[1]});
   }
   return L;
 }
 function cartItems(){
+  var tag=buildTag();
   return lines().filter(function(l){return l.vid&&!l.oos}).map(function(l){
-    var o={id:Number(l.vid),quantity:1}; if(l.props)o.properties=l.props; return o});
+    var p=l.props?JSON.parse(JSON.stringify(l.props)):{};
+    if(tag)p["Build"]=tag;                       /* on EVERY line, not just the light */
+    if(l.role)p["Part of build"]=l.role;
+    var o={id:Number(l.vid),quantity:1};
+    if(Object.keys(p).length)o.properties=p;
+    return o});
 }
 function cartUrl(){
   if(!ready())return null;
@@ -346,6 +399,7 @@ function ready(){
   if(!S.em)return false;
   if(!S.refl)return false;
   if(!S.optic)return false;
+  if(!S.beamOK)return false;
   if(!S.ack)return false;
   if(S.host&&S.host.v==="unknown")return false;
   if(S.host&&S.host.oos)return false;
@@ -356,9 +410,20 @@ var ICO={ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
 warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>'};
 var R=document.getElementById(ROOT);
+/* Scroll so the section HEADER (number + title) is at the top of the viewport,
+   never mid-way through its options — landing mid-list makes people miss steps. */
+function goTo(node){
+  if(!node)return;
+  var y=node.getBoundingClientRect().top+(window.pageYOffset||document.documentElement.scrollTop)-84;
+  try{window.scrollTo({top:y<0?0:y,behavior:"smooth"})}catch(e){window.scrollTo(0,y<0?0:y)}
+  node.classList.add("justmoved");
+  setTimeout(function(){node.classList.remove("justmoved")},1400);
+}
+function stepEl(n){return R.querySelector('.stp[data-n="'+n+'"]')}
+function e_(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function el(t){var d=document.createElement('div');d.innerHTML=t;return d}
 function step(n,title,state,note,inner){
-  return '<section class="stp" data-s="'+state+'"><div class="sh"><span class="sn">'+
+  return '<section class="stp" data-s="'+state+'" data-n="'+n+'"><div class="sh"><span class="sn">'+
    (state==='done'?ICO.ok:state==='lock'?ICO.lock:n)+'</span><h3>'+title+'</h3>'+
    (note?'<span class="snote">'+note+'</span>':'')+'</div><div class="sb">'+inner+'</div></section>';
 }
@@ -425,8 +490,8 @@ function render(){
   out+=step(2,'Pick the emitter',e2state,e2note,e2inner);
 
   /* ---- 3. beam shaping: reflector + optic ---- */
-  var b3state=!S.em?'lock':((S.refl&&S.optic)?'done':'active');
-  var b3note=!S.em?'Pick an emitter first':((S.refl&&S.optic)?(S.refl.split(' - ')[0]+' · '+S.optic):'Choose both');
+  var b3state=!S.em?'lock':(S.beamOK?'done':'active');
+  var b3note=!S.em?'Pick an emitter first':(S.beamOK?(S.refl.split(' - ')[0]+' · '+S.optic):'Defaults chosen — review or change');
   var b3inner;
   if(!S.em){b3inner='<p class="lede">Pick an emitter and this unlocks.</p>'}
   else{
@@ -442,7 +507,15 @@ function render(){
         var hide=(i>0&&!S.showOptics)?' style="display:none"':'';
         return '<span'+hide+' class="opticwrap">'+optBtn('opt'+(i===0?' opt-star':''),o,null,(S.optic===o),
           'data-optic="'+o.replace(/"/g,'&quot;')+'"',i===0?'<span class="star">Standard</span>':'')+'</span>'}).join('')+
-      '</div>'+(S.showOptics?'':'<button class="btnlink" type="button" id="moreoptics">Show all '+OPTICS.length+' optics</button>');
+      '</div>'+
+      '<button class="acc" type="button" id="moreoptics" aria-expanded="'+(S.showOptics?'true':'false')+'">'+
+        '<span class="accchev">'+(S.showOptics?'▾':'▸')+'</span>'+
+        '<span class="acctxt">'+(S.showOptics?'Hide the other optics':'Show all '+OPTICS.length+' optics')+'</span>'+
+        '<span class="accsub">'+(S.showOptics?'Collapse back to the standard glass lens':'Flat, Matte, Stripe and Bead angles — optional')+'</span>'+
+      '</button>'+
+      (S.beamOK?'':'<div class="confirmrow"><p>We have already picked sensible defaults. '+
+        'Change them if you want, then continue.</p>'+
+        '<button class="btn go" type="button" id="beamok">These look good &rarr;</button></div>');
   }
   out+=step(3,'Shape the beam',b3state,b3note,b3inner);
 
@@ -536,8 +609,15 @@ function render(){
        '</a>'}).join('')+'</div>'+
      (S.sw?'<div class="msg msg-dc"><div><b>We will fit the '+S.sw.n+' for you.</b>'+
        '<p>Because the switch is on the same order, it ships installed &mdash; you do not have to do it yourself.</p></div></div>':'')+
-     '<label class="ackbox'+(S.ack?' on':'')+'"><input type="checkbox" id="ack"'+(S.ack?' checked':'')+'>'+
-     '<span>'+CONSENT+'</span></label>';
+     '<div class="ackwrap'+(S.ack?' on':'')+'">'+
+       '<div class="ackhead">'+(S.ack?'✓ Acknowledged':'⚠ Read this before you order')+'</div>'+
+       '<label class="ackbox"><input type="checkbox" id="ack"'+(S.ack?' checked':'')+'>'+
+       '<span>'+CONSENT+'</span></label></div>'+
+     '<div class="nickrow"><label for="nick">Name this build <em>(optional — helps if you are ordering more than one)</em></label>'+
+       '<input type="text" id="nick" maxlength="40" placeholder="e.g. Dad\'s light" value="'+
+       String(S.nick||'').replace(/"/g,'&quot;')+'"></div>'+
+     '<div class="buildtag"><b>Tagged as:</b> '+e_(buildTag()||'—')+
+       '<span>Every part above carries this tag, so we know which switch and button belong to which light.</span></div>';
   }
   out+=step(7,'Your build',rdy?'done':(L.length?'active':'lock'),rdy?'Ready':'',res);
   R.innerHTML='<div class="steps">'+out+'</div>'+
@@ -552,7 +632,7 @@ function render(){
     ac.disabled=true;ac.textContent='Adding…';
     fetch('/cart/add.js',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({items:cartItems()})})
-      .then(function(r){if(!r.ok)throw 0;window.location='/cart'})
+      .then(function(r){if(!r.ok)throw 0;bumpBuildNo();window.location='/cart'})
       .catch(function(){ /* fallback: permalink (drops the emitter note) */
         var u=cartUrl(); if(u)window.location=u;
         else{ac.disabled=false;ac.textContent='Add to cart →'} });
@@ -561,20 +641,26 @@ function render(){
 function wire(){
   R.querySelectorAll('[data-h]').forEach(function(b){b.addEventListener('click',function(){
     var n=HOSTS.filter(function(x){return x.id===b.dataset.h})[0];
-    S.host=(S.host&&S.host.id===n.id)?null:n; S.em=null;S.refl=null;S.optic=null;S.ack=false;S.sw=null;S.led=null;S.btn=null; render();
-    var nx=R.querySelector('.stp[data-s="active"]'); if(nx)nx.scrollIntoView({behavior:'smooth',block:'center'})})});
+    S.host=(S.host&&S.host.id===n.id)?null:n;
+    S.em=null;S.refl=null;S.optic=null;S.beamOK=false;S.ack=false;S.sw=null;S.led=null;S.btn=null;
+    render(); if(S.host)goTo(stepEl(2))})});
   R.querySelectorAll('[data-em]').forEach(function(b){b.addEventListener('click',function(){
     var v=b.dataset.em;
     if(S.em===v){S.em=null;S.refl=null;S.optic=null;}
     else{S.em=v;S.refl=suggestRefl(v);S.optic=OPTICS[0];}
-    render();
-    var nx=R.querySelector('.stp[data-s="active"]'); if(nx)nx.scrollIntoView({behavior:'smooth',block:'center'})})});
+    render(); if(S.em)goTo(stepEl(3))})});   /* land ON the beam step, not past it */
   R.querySelectorAll('[data-refl]').forEach(function(b){b.addEventListener('click',function(){
     S.refl=b.dataset.refl; render()})});
   R.querySelectorAll('[data-optic]').forEach(function(b){b.addEventListener('click',function(){
     S.optic=b.dataset.optic; render()})});
   var mo=document.getElementById('moreoptics');
-  if(mo)mo.addEventListener('click',function(){S.showOptics=true;render()});
+  if(mo)mo.addEventListener('click',function(){S.showOptics=!S.showOptics;render();goTo(stepEl(3))});
+  var bok=document.getElementById('beamok');
+  if(bok)bok.addEventListener('click',function(){S.beamOK=true;render();goTo(stepEl(4))});
+  var nk=document.getElementById('nick');
+  if(nk)nk.addEventListener('input',function(){S.nick=nk.value;
+    var t=R.querySelector('.buildtag');if(t)t.innerHTML='<b>Tagged as:</b> '+e_(buildTag()||'—')+
+      '<span>Every part above carries this tag, so we know which switch and button belong to which light.</span>'});
   var ak=document.getElementById('ack');
   if(ak)ak.addEventListener('change',function(){S.ack=ak.checked;render()});
   R.querySelectorAll('[data-sw]').forEach(function(b){b.addEventListener('click',function(){
@@ -583,7 +669,7 @@ function wire(){
     var nx=R.querySelector('.stp[data-s="active"]'); if(nx)nx.scrollIntoView({behavior:'smooth',block:'center'})})});
   R.querySelectorAll('[data-led]').forEach(function(b){b.addEventListener('click',function(){
     var c=S.sw.cols.filter(function(x){return x[0]===b.dataset.led})[0];
-    S.led=(S.led&&S.led[0]===c[0])?null:c; render()})});
+    S.led=(S.led&&S.led[0]===c[0])?null:c; render(); if(S.led&&takesButton())goTo(stepEl(6))})});
   R.querySelectorAll('[data-btn]').forEach(function(b){b.addEventListener('click',function(){
     var k=b.dataset.btn,c;
     if(k==='Brass')c=['Brass',BRASSBTN.sw,BRASSBTN.vid,false];

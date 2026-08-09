@@ -3,9 +3,20 @@ var ICO={ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
 warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>'};
 var R=document.getElementById(ROOT);
+/* Scroll so the section HEADER (number + title) is at the top of the viewport,
+   never mid-way through its options — landing mid-list makes people miss steps. */
+function goTo(node){
+  if(!node)return;
+  var y=node.getBoundingClientRect().top+(window.pageYOffset||document.documentElement.scrollTop)-84;
+  try{window.scrollTo({top:y<0?0:y,behavior:"smooth"})}catch(e){window.scrollTo(0,y<0?0:y)}
+  node.classList.add("justmoved");
+  setTimeout(function(){node.classList.remove("justmoved")},1400);
+}
+function stepEl(n){return R.querySelector('.stp[data-n="'+n+'"]')}
+function e_(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function el(t){var d=document.createElement('div');d.innerHTML=t;return d}
 function step(n,title,state,note,inner){
-  return '<section class="stp" data-s="'+state+'"><div class="sh"><span class="sn">'+
+  return '<section class="stp" data-s="'+state+'" data-n="'+n+'"><div class="sh"><span class="sn">'+
    (state==='done'?ICO.ok:state==='lock'?ICO.lock:n)+'</span><h3>'+title+'</h3>'+
    (note?'<span class="snote">'+note+'</span>':'')+'</div><div class="sb">'+inner+'</div></section>';
 }
@@ -72,8 +83,8 @@ function render(){
   out+=step(2,'Pick the emitter',e2state,e2note,e2inner);
 
   /* ---- 3. beam shaping: reflector + optic ---- */
-  var b3state=!S.em?'lock':((S.refl&&S.optic)?'done':'active');
-  var b3note=!S.em?'Pick an emitter first':((S.refl&&S.optic)?(S.refl.split(' - ')[0]+' · '+S.optic):'Choose both');
+  var b3state=!S.em?'lock':(S.beamOK?'done':'active');
+  var b3note=!S.em?'Pick an emitter first':(S.beamOK?(S.refl.split(' - ')[0]+' · '+S.optic):'Defaults chosen — review or change');
   var b3inner;
   if(!S.em){b3inner='<p class="lede">Pick an emitter and this unlocks.</p>'}
   else{
@@ -89,7 +100,15 @@ function render(){
         var hide=(i>0&&!S.showOptics)?' style="display:none"':'';
         return '<span'+hide+' class="opticwrap">'+optBtn('opt'+(i===0?' opt-star':''),o,null,(S.optic===o),
           'data-optic="'+o.replace(/"/g,'&quot;')+'"',i===0?'<span class="star">Standard</span>':'')+'</span>'}).join('')+
-      '</div>'+(S.showOptics?'':'<button class="btnlink" type="button" id="moreoptics">Show all '+OPTICS.length+' optics</button>');
+      '</div>'+
+      '<button class="acc" type="button" id="moreoptics" aria-expanded="'+(S.showOptics?'true':'false')+'">'+
+        '<span class="accchev">'+(S.showOptics?'▾':'▸')+'</span>'+
+        '<span class="acctxt">'+(S.showOptics?'Hide the other optics':'Show all '+OPTICS.length+' optics')+'</span>'+
+        '<span class="accsub">'+(S.showOptics?'Collapse back to the standard glass lens':'Flat, Matte, Stripe and Bead angles — optional')+'</span>'+
+      '</button>'+
+      (S.beamOK?'':'<div class="confirmrow"><p>We have already picked sensible defaults. '+
+        'Change them if you want, then continue.</p>'+
+        '<button class="btn go" type="button" id="beamok">These look good &rarr;</button></div>');
   }
   out+=step(3,'Shape the beam',b3state,b3note,b3inner);
 
@@ -183,8 +202,15 @@ function render(){
        '</a>'}).join('')+'</div>'+
      (S.sw?'<div class="msg msg-dc"><div><b>We will fit the '+S.sw.n+' for you.</b>'+
        '<p>Because the switch is on the same order, it ships installed &mdash; you do not have to do it yourself.</p></div></div>':'')+
-     '<label class="ackbox'+(S.ack?' on':'')+'"><input type="checkbox" id="ack"'+(S.ack?' checked':'')+'>'+
-     '<span>'+CONSENT+'</span></label>';
+     '<div class="ackwrap'+(S.ack?' on':'')+'">'+
+       '<div class="ackhead">'+(S.ack?'✓ Acknowledged':'⚠ Read this before you order')+'</div>'+
+       '<label class="ackbox"><input type="checkbox" id="ack"'+(S.ack?' checked':'')+'>'+
+       '<span>'+CONSENT+'</span></label></div>'+
+     '<div class="nickrow"><label for="nick">Name this build <em>(optional — helps if you are ordering more than one)</em></label>'+
+       '<input type="text" id="nick" maxlength="40" placeholder="e.g. Dad\'s light" value="'+
+       String(S.nick||'').replace(/"/g,'&quot;')+'"></div>'+
+     '<div class="buildtag"><b>Tagged as:</b> '+e_(buildTag()||'—')+
+       '<span>Every part above carries this tag, so we know which switch and button belong to which light.</span></div>';
   }
   out+=step(7,'Your build',rdy?'done':(L.length?'active':'lock'),rdy?'Ready':'',res);
   R.innerHTML='<div class="steps">'+out+'</div>'+
@@ -199,7 +225,7 @@ function render(){
     ac.disabled=true;ac.textContent='Adding…';
     fetch('/cart/add.js',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({items:cartItems()})})
-      .then(function(r){if(!r.ok)throw 0;window.location='/cart'})
+      .then(function(r){if(!r.ok)throw 0;bumpBuildNo();window.location='/cart'})
       .catch(function(){ /* fallback: permalink (drops the emitter note) */
         var u=cartUrl(); if(u)window.location=u;
         else{ac.disabled=false;ac.textContent='Add to cart →'} });
@@ -208,20 +234,26 @@ function render(){
 function wire(){
   R.querySelectorAll('[data-h]').forEach(function(b){b.addEventListener('click',function(){
     var n=HOSTS.filter(function(x){return x.id===b.dataset.h})[0];
-    S.host=(S.host&&S.host.id===n.id)?null:n; S.em=null;S.refl=null;S.optic=null;S.ack=false;S.sw=null;S.led=null;S.btn=null; render();
-    var nx=R.querySelector('.stp[data-s="active"]'); if(nx)nx.scrollIntoView({behavior:'smooth',block:'center'})})});
+    S.host=(S.host&&S.host.id===n.id)?null:n;
+    S.em=null;S.refl=null;S.optic=null;S.beamOK=false;S.ack=false;S.sw=null;S.led=null;S.btn=null;
+    render(); if(S.host)goTo(stepEl(2))})});
   R.querySelectorAll('[data-em]').forEach(function(b){b.addEventListener('click',function(){
     var v=b.dataset.em;
     if(S.em===v){S.em=null;S.refl=null;S.optic=null;}
     else{S.em=v;S.refl=suggestRefl(v);S.optic=OPTICS[0];}
-    render();
-    var nx=R.querySelector('.stp[data-s="active"]'); if(nx)nx.scrollIntoView({behavior:'smooth',block:'center'})})});
+    render(); if(S.em)goTo(stepEl(3))})});   /* land ON the beam step, not past it */
   R.querySelectorAll('[data-refl]').forEach(function(b){b.addEventListener('click',function(){
     S.refl=b.dataset.refl; render()})});
   R.querySelectorAll('[data-optic]').forEach(function(b){b.addEventListener('click',function(){
     S.optic=b.dataset.optic; render()})});
   var mo=document.getElementById('moreoptics');
-  if(mo)mo.addEventListener('click',function(){S.showOptics=true;render()});
+  if(mo)mo.addEventListener('click',function(){S.showOptics=!S.showOptics;render();goTo(stepEl(3))});
+  var bok=document.getElementById('beamok');
+  if(bok)bok.addEventListener('click',function(){S.beamOK=true;render();goTo(stepEl(4))});
+  var nk=document.getElementById('nick');
+  if(nk)nk.addEventListener('input',function(){S.nick=nk.value;
+    var t=R.querySelector('.buildtag');if(t)t.innerHTML='<b>Tagged as:</b> '+e_(buildTag()||'—')+
+      '<span>Every part above carries this tag, so we know which switch and button belong to which light.</span>'});
   var ak=document.getElementById('ack');
   if(ak)ak.addEventListener('change',function(){S.ack=ak.checked;render()});
   R.querySelectorAll('[data-sw]').forEach(function(b){b.addEventListener('click',function(){
@@ -230,7 +262,7 @@ function wire(){
     var nx=R.querySelector('.stp[data-s="active"]'); if(nx)nx.scrollIntoView({behavior:'smooth',block:'center'})})});
   R.querySelectorAll('[data-led]').forEach(function(b){b.addEventListener('click',function(){
     var c=S.sw.cols.filter(function(x){return x[0]===b.dataset.led})[0];
-    S.led=(S.led&&S.led[0]===c[0])?null:c; render()})});
+    S.led=(S.led&&S.led[0]===c[0])?null:c; render(); if(S.led&&takesButton())goTo(stepEl(6))})});
   R.querySelectorAll('[data-btn]').forEach(function(b){b.addEventListener('click',function(){
     var k=b.dataset.btn,c;
     if(k==='Brass')c=['Brass',BRASSBTN.sw,BRASSBTN.vid,false];

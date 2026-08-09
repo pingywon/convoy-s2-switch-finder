@@ -90,8 +90,21 @@ function suggestRefl(v){
   return "Default";
 }
 
+/* Build identity — so a cart holding several lights can be told apart.
+   Every line of one build carries the same "Build" property. */
+function buildNo(){
+  try{var n=parseInt(sessionStorage.getItem("gcS2BuildNo")||"1",10);return isNaN(n)?1:n}
+  catch(e){return 1}
+}
+function bumpBuildNo(){try{sessionStorage.setItem("gcS2BuildNo",String(buildNo()+1))}catch(e){}}
+function buildTag(){
+  if(!S.host)return null;
+  var base="Build "+buildNo()+" — "+S.host.n+(S.em?" · "+S.em:"");
+  return S.nick?("Build "+buildNo()+" — "+S.nick+" ("+S.host.n+(S.em?" · "+S.em:"")+")"):base;
+}
+
 /* ---------------- rule engine ---------------- */
-var S={host:null,em:null,refl:null,optic:null,ack:false,sw:null,led:null,btn:null};
+var S={host:null,em:null,refl:null,optic:null,beamOK:false,ack:false,sw:null,led:null,btn:null,nick:''};
 function money(n){return "$"+n.toFixed(2)}
 function purl(h){return P+h}
 function canonCount(v){var s={},k;HOSTS.forEach(function(h){if(h.v===v)s[h.canon||h.id]=1});
@@ -164,7 +177,7 @@ function lines(){
       if(S.sw)pr["Install service"]="Yes - install the "+S.sw.n+" I am buying with this light";
       if(S.ack)pr["Build acknowledgement"]="Accepted - non-returnable custom build";
     }
-    L.push({n:"Convoy S2+ - "+S.host.n,p:S.host.p,vid:S.host.vid,h:S.host.h,sw:S.host.sw,
+    L.push({role:"The light",n:"Convoy S2+ - "+S.host.n,p:S.host.p,vid:S.host.vid,h:S.host.h,sw:S.host.sw,
             oos:!!S.host.oos,props:pr,
             sub:S.em?(S.em+" · "+(S.refl||"Default")+" · "+(S.optic||"Default (Glass)")):null});
   }
@@ -172,20 +185,26 @@ function lines(){
     var p=S.sw.p,vid=null;
     if(S.sw.cols.length){ if(S.led){p=S.led[3];vid=S.led[2];} }
     else vid="50172242526523";
-    L.push({n:S.sw.n+(S.led?" — "+S.led[0]:""),p:p,vid:vid,h:S.sw.h,sw:null,
+    L.push({role:"Tail switch for this light",n:S.sw.n+(S.led?" — "+S.led[0]:""),p:p,vid:vid,h:S.sw.h,sw:null,
             pend:(S.sw.cols.length&&!S.led)});
   }
   if(S.btn){
     var fam=takesButton(),isBrass=S.btn[0]==="Brass";
-    L.push({n:(fam==="rubber"?"Rubber button — ":"Centre button — ")+S.btn[0],
+    L.push({role:(fam==="rubber"?"Rubber button for this light":"Centre button for this light"),n:(fam==="rubber"?"Rubber button — ":"Centre button — ")+S.btn[0],
             p:isBrass?BRASSBTN.p:(fam==="rubber"?RUBBTN.p:BTN.p),vid:S.btn[2],
             h:isBrass?BRASSBTN.h:(fam==="rubber"?RUBBTN.h:BTN.h),sw:S.btn[1]});
   }
   return L;
 }
 function cartItems(){
+  var tag=buildTag();
   return lines().filter(function(l){return l.vid&&!l.oos}).map(function(l){
-    var o={id:Number(l.vid),quantity:1}; if(l.props)o.properties=l.props; return o});
+    var p=l.props?JSON.parse(JSON.stringify(l.props)):{};
+    if(tag)p["Build"]=tag;                       /* on EVERY line, not just the light */
+    if(l.role)p["Part of build"]=l.role;
+    var o={id:Number(l.vid),quantity:1};
+    if(Object.keys(p).length)o.properties=p;
+    return o});
 }
 function cartUrl(){
   if(!ready())return null;
@@ -200,6 +219,7 @@ function ready(){
   if(!S.em)return false;
   if(!S.refl)return false;
   if(!S.optic)return false;
+  if(!S.beamOK)return false;
   if(!S.ack)return false;
   if(S.host&&S.host.v==="unknown")return false;
   if(S.host&&S.host.oos)return false;
