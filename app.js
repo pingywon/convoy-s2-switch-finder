@@ -46,38 +46,59 @@ function render(){
     '</b> are pressed in at the factory and only take a new centre button.</p>'+inner);
 
 
-  /* ---- 2. emitter (DRAFT list) — reflector is derived, never asked ---- */
-  var e2state = !h?'lock':(S.em&&S.cct?'done':'active');
-  var e2note = !h?'Pick a light first':(S.em?(S.em.n+(S.cct?' · '+S.cct:' · pick a temperature')):'Choose an emitter');
+  /* ---- 2. emitter (real option set) ---- */
+  var e2state=!h?'lock':(S.em?'done':'active');
+  var e2note=!h?'Pick a light first':(S.em||'Choose an emitter');
   var e2inner;
-  if(!h){ e2inner='<p class="lede">Choose your light above and this unlocks.</p>' }
+  if(!h){e2inner='<p class="lede">Choose your light above and this unlocks.</p>'}
   else{
     e2inner='<div class="msg msg-rule">'+ICO.warn+'<div><b>This is what the light actually looks like.</b>'+
-     '<p>The emitter sets colour and beam. We match the reflector to it for you &mdash; smooth for throwers, '+
-     'orange peel for the high-CRI emitters &mdash; so you never have to pair them yourself.</p></div></div>'+
-     '<div class="pgrid pgrid-3">'+EMITTERS.map(function(e){
-       return '<button class="pick swc" type="button" data-em="'+e.k+'" aria-pressed="'+(S.em&&S.em.k===e.k)+'">'+
-        '<span class="swn">'+e.n+'</span>'+
-        '<span class="swt '+(e.refl==='Smooth'?'nolit':'lit')+'">'+e.cri+'</span>'+
-        '<span class="swd">'+e.note+'</span>'+
-        '<span class="swa">'+e.refl+' reflector &middot; '+e.ccts.length+' temperature'+(e.ccts.length>1?'s':'')+'</span></button>'}).join('')+'</div>';
-    if(S.em){
-      e2inner+='<div class="lbl">Colour temperature &mdash; '+S.em.n+'</div><div class="pgrid pgrid-s">'+
-       S.em.ccts.map(function(t){
-         return optBtn('opt',t,null,(S.cct===t),'data-cct="'+t+'"',
-           t==='2700K'||t==='3000K'?'<span class="star star-off">Warm</span>':
-           (t==='6500K'?'<span class="star star-off">Cool</span>':''))}).join('')+'</div>'+
-       '<p class="fine">Reflector: <b>'+S.em.refl+'</b> — matched to the '+S.em.n+' automatically.</p>';
-    }
+     '<p>The emitter sets colour and beam. Most people want a white one &mdash; the 519a group is the '+
+     'safe pick. The others are for specific jobs.</p></div></div>'+
+     EM_GROUPS.map(function(gr){
+      return '<div class="grp"><div class="grpt">'+gr.g+'</div>'+
+       '<p class="lede" style="margin-bottom:10px">'+gr.note+'</p><div class="pgrid">'+
+       gr.items.map(function(v){
+         var badge = isIR(v)?'<span class="star star-off">One mode only</span>':
+                     (v.indexOf('Mystery')===0?'<span class="star star-off">Surprise</span>':'');
+         return optBtn('opt',v,null,(S.em===v),'data-em="'+v.replace(/"/g,'&quot;')+'"',badge)}).join('')+
+       '</div></div>'}).join('');
+    if(isIR(S.em))e2inner+='<div class="msg msg-warn">'+ICO.warn+'<div><b>Infrared is invisible.</b>'+
+      '<p>You will see nothing by eye &mdash; it only works through night-vision gear, and it runs at '+
+      '100% output with no other modes.</p></div></div>';
+    else if(isColour(S.em))e2inner+='<div class="msg msg-rule">'+ICO.warn+'<div><b>This is a single-colour emitter.</b>'+
+      '<p>It only puts out that colour &mdash; it will not work as a general white flashlight.</p></div></div>';
   }
   out+=step(2,'Pick the emitter',e2state,e2note,e2inner);
 
+  /* ---- 3. beam shaping: reflector + optic ---- */
+  var b3state=!S.em?'lock':((S.refl&&S.optic)?'done':'active');
+  var b3note=!S.em?'Pick an emitter first':((S.refl&&S.optic)?(S.refl.split(' - ')[0]+' · '+S.optic):'Choose both');
+  var b3inner;
+  if(!S.em){b3inner='<p class="lede">Pick an emitter and this unlocks.</p>'}
+  else{
+    var sug=suggestRefl(S.em);
+    b3inner='<div class="lbl">Reflector</div><p class="lede" style="margin-bottom:10px">'+
+      'We suggest <b>'+sug+'</b> for the '+S.em+', but it is your call.</p><div class="pgrid">'+
+      REFLECTORS.map(function(r){return optBtn('opt'+(r===sug?' opt-star':''),r,null,(S.refl===r),
+        'data-refl="'+r.replace(/"/g,'&quot;')+'"',r===sug?'<span class="star">Suggested</span>':'')}).join('')+'</div>'+
+      '<div class="lbl">Optic / lens</div>'+
+      '<p class="lede" style="margin-bottom:10px">Glass is the standard. The angled optics trade throw for a '+
+      'wider, softer flood &mdash; only pick one if you know you want it.</p><div class="pgrid pgrid-s">'+
+      OPTICS.map(function(o,i){
+        var hide=(i>0&&!S.showOptics)?' style="display:none"':'';
+        return '<span'+hide+' class="opticwrap">'+optBtn('opt'+(i===0?' opt-star':''),o,null,(S.optic===o),
+          'data-optic="'+o.replace(/"/g,'&quot;')+'"',i===0?'<span class="star">Standard</span>':'')+'</span>'}).join('')+
+      '</div>'+(S.showOptics?'':'<button class="btnlink" type="button" id="moreoptics">Show all '+OPTICS.length+' optics</button>');
+  }
+  out+=step(3,'Shape the beam',b3state,b3note,b3inner);
+
   /* ---- 3. the switch ---- */
-  var s2state = (!h||!S.em||!S.cct)?'lock':(h.v==='full'?(S.sw?'done':'active'):'lock');
+  var s2state = (!h||!S.em||!S.refl||!S.optic)?'lock':(h.v==='full'?(S.sw?'done':'active'):'lock');
   var s2note = !h?'Pick a light first':(h.v==='center'?'Not available on this finish':(S.sw?S.sw.n:''));
   var s2inner;
   if(!h){ s2inner='<p class="lede">Choose your light above and this unlocks.</p>' }
-  else if(!S.em||!S.cct){ s2inner='<p class="lede">Pick your emitter and colour temperature first.</p>' }
+  else if(!S.em||!S.refl||!S.optic){ s2inner='<p class="lede">Pick your emitter and beam first.</p>' }
   else if(h.v==='center'){
     s2inner='<div class="msg msg-warn">'+ICO.warn+'<div><b>The '+h.n+' switch does not come out.</b>'+
      '<p>It is pressed into the tail cap at the factory. You cannot fit a different switch — but you '+
@@ -95,7 +116,7 @@ function render(){
         '<span class="swd">'+sw.pitch+'</span><span class="swa">'+sw.act+'</span></button>'}).join('')+'</div>';
   }
   if(h&&h.v==='unknown')s2state='lock';
-  out+=step(3,'Pick your switch',s2state,s2note,s2inner);
+  out+=step(4,'Pick your switch',s2state,s2note,s2inner);
 
   /* ---- 3. LED colour ---- */
   var needLed = !!(h&&h.v==='full'&&S.sw&&S.sw.cols.length);
@@ -110,7 +131,7 @@ function render(){
         return optBtn('opt',c[0],c[1],(S.led&&S.led[0]===c[0]),'data-led="'+c[0]+'"','')}).join('')+'</div>'
     : '<p class="lede">'+(S.sw&&!S.sw.lit?'The forward clicky is not illuminated, so there is no LED colour to pick.'
         :'Pick an illuminated switch above and the colours unlock.')+'</p>';
-  out+=step(4,'Pick the LED colour',s3state,s3note,s3inner);
+  out+=step(5,'Pick the LED colour',s3state,s3note,s3inner);
 
   /* ---- 4. button (metal centre, or coloured rubber tailcap) ---- */
   var fam=takesButton();
@@ -146,7 +167,7 @@ function render(){
          'data-btn="'+c[0]+'"',isC?'<span class="star">Double Clear</span>':'')}).join('')+
        optBtn('opt',BRASSBTN.n,BRASSBTN.sw,(S.btn&&S.btn[0]==='Brass'),'data-btn="Brass"','')+'</div>';
   }
-  out+=step(5,s4title,s4state,s4note,s4inner);
+  out+=step(6,s4title,s4state,s4note,s4inner);
 
   /* ---- 5. result ---- */
   var L=lines(),rdy=ready();
@@ -160,9 +181,12 @@ function render(){
        '<span class="pn">'+l.n+(l.pend?' <em>— choose a colour</em>':'')+(l.oos?' <em>— sold out</em>':'')+
        (l.sub?'<span class="psub">'+l.sub+'</span>':'')+'</span>'+
        '</a>'}).join('')+'</div>'+
-     '<p class="fine">Emitter, reflector and lens are chosen on the S2+ product page — open the light above to pick them.</p>';
+     (S.sw?'<div class="msg msg-dc"><div><b>We will fit the '+S.sw.n+' for you.</b>'+
+       '<p>Because the switch is on the same order, it ships installed &mdash; you do not have to do it yourself.</p></div></div>':'')+
+     '<label class="ackbox'+(S.ack?' on':'')+'"><input type="checkbox" id="ack"'+(S.ack?' checked':'')+'>'+
+     '<span>'+CONSENT+'</span></label>';
   }
-  out+=step(6,'Your build',rdy?'done':(L.length?'active':'lock'),rdy?'Ready':'',res);
+  out+=step(7,'Your build',rdy?'done':(L.length?'active':'lock'),rdy?'Ready':'',res);
   R.innerHTML='<div class="steps">'+out+'</div>'+
     '<div class="bar'+(L.length?' on':'')+'"><div class="barin"><div class="bartxt">'+
     (rdy?'<b>'+L.length+' item'+(L.length>1?'s':'')+' ready</b><span>Total shown at checkout</span>'
@@ -184,15 +208,22 @@ function render(){
 function wire(){
   R.querySelectorAll('[data-h]').forEach(function(b){b.addEventListener('click',function(){
     var n=HOSTS.filter(function(x){return x.id===b.dataset.h})[0];
-    S.host=(S.host&&S.host.id===n.id)?null:n; S.em=null;S.cct=null;S.sw=null;S.led=null;S.btn=null; render();
+    S.host=(S.host&&S.host.id===n.id)?null:n; S.em=null;S.refl=null;S.optic=null;S.ack=false;S.sw=null;S.led=null;S.btn=null; render();
     var nx=R.querySelector('.stp[data-s="active"]'); if(nx)nx.scrollIntoView({behavior:'smooth',block:'center'})})});
   R.querySelectorAll('[data-em]').forEach(function(b){b.addEventListener('click',function(){
-    var e=EMITTERS.filter(function(x){return x.k===b.dataset.em})[0];
-    if(S.em&&S.em.k===e.k){S.em=null;S.cct=null;}else{S.em=e;S.cct=(e.ccts.length===1?e.ccts[0]:null);}
-    render();})});
-  R.querySelectorAll('[data-cct]').forEach(function(b){b.addEventListener('click',function(){
-    S.cct=(S.cct===b.dataset.cct)?null:b.dataset.cct; render();
+    var v=b.dataset.em;
+    if(S.em===v){S.em=null;S.refl=null;S.optic=null;}
+    else{S.em=v;S.refl=suggestRefl(v);S.optic=OPTICS[0];}
+    render();
     var nx=R.querySelector('.stp[data-s="active"]'); if(nx)nx.scrollIntoView({behavior:'smooth',block:'center'})})});
+  R.querySelectorAll('[data-refl]').forEach(function(b){b.addEventListener('click',function(){
+    S.refl=b.dataset.refl; render()})});
+  R.querySelectorAll('[data-optic]').forEach(function(b){b.addEventListener('click',function(){
+    S.optic=b.dataset.optic; render()})});
+  var mo=document.getElementById('moreoptics');
+  if(mo)mo.addEventListener('click',function(){S.showOptics=true;render()});
+  var ak=document.getElementById('ack');
+  if(ak)ak.addEventListener('change',function(){S.ack=ak.checked;render()});
   R.querySelectorAll('[data-sw]').forEach(function(b){b.addEventListener('click',function(){
     var n=SWITCHES.filter(function(x){return x.id===b.dataset.sw})[0];
     S.sw=(S.sw&&S.sw.id===n.id)?null:n; S.led=null; if(!takesButton())S.btn=null; render();

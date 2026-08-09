@@ -55,30 +55,43 @@ var RUBBTN={h:"convoy-color-rubber-tail-cap-buttons-for-s2-c8-and-more",p:0.25,
  cols:[["Black","#1e2124","50300036677947"],["Orange","#c25a1c","50300036710715"],["Green (does NOT glow)","#1f6b3a","50300036743483"],["Blue (glow)","#20509a","50300036776251"],["Translucent / White","#e8e8e6","50300036809019"]]};
 
 
-/* ================== DRAFT — NOT OWNER-APPROVED ==================
-   Emitter list derived from the S2+ spec_table reflector pairing on the live
-   product ("Smooth for SST20/SST40/SFT40/XPL HI/Osram; orange peel for
-   219/519A/LH351D/B35AM/719A") plus the CCTs GC already sells on other Convoy
-   listings. NO product listing was changed to produce this.
-   Reflector is DERIVED from the emitter, never asked.
-   ---- OWNER: confirm/trim this list and the CCTs before this goes live. ---- */
-var EMITTERS=[
- {k:"519a", n:"Nichia 519A",  refl:"Orange peel", cri:"High CRI ~90", note:"The default crowd favourite. Neutral, natural colour.",
-  ccts:["2700K","3000K","3500K","4000K","4500K","5000K","5700K"]},
- {k:"219b", n:"Nichia 219B",  refl:"Orange peel", cri:"Very high CRI ~92", note:"Rosy, best-in-class colour. Lower output.", ccts:["4500K"]},
- {k:"219c", n:"Nichia 219C",  refl:"Orange peel", cri:"High CRI ~90", note:"Neutral high-CRI, brighter than 219B.", ccts:["4000K","5000K"]},
- {k:"719a", n:"Nichia 719A",  refl:"Orange peel", cri:"Very high CRI ~93", note:"Modern high-CRI flooder.", ccts:["4000K","5000K"]},
- {k:"b35am",n:"Nichia B35AM", refl:"Orange peel", cri:"Ultra high CRI ~98", note:"Reference-grade colour. The connoisseur pick.", ccts:["4500K","5000K"]},
- {k:"lh351d",n:"Samsung LH351D",refl:"Orange peel",cri:"High CRI ~90", note:"Wide flood, strong output for the CRI.", ccts:["4000K","5000K"]},
- {k:"sst20",n:"Luminus SST-20",refl:"Smooth",     cri:"High CRI ~95", note:"High CRI with a tighter beam than the Nichias.", ccts:["4000K","6500K"]},
- {k:"sst40",n:"Luminus SST-40",refl:"Smooth",     cri:"Standard CRI ~70",note:"Brightest of the budget options. Output over colour.", ccts:["5000K","6500K"]},
- {k:"sft40",n:"Luminus SFT-40",refl:"Smooth",     cri:"Standard CRI ~70",note:"Throwier than SST-40 — reaches further.", ccts:["3000K","5000K","6500K"]},
- {k:"xplhi",n:"Cree XP-L HI", refl:"Smooth",      cri:"Standard CRI ~70",note:"Classic thrower emitter, tight hotspot.", ccts:["5000K","6500K"]},
- {k:"osram",n:"OSRAM W1 / W2", refl:"Smooth",     cri:"Low CRI ~70", note:"Maximum throw. Small, intense hotspot.", ccts:["6500K"]}
+
+
+/* ===== Build options, transcribed from the live S2+ custom-build option set =====
+   Read-only transcription. No listing, PDP or option template was modified.
+   Value strings are kept verbatim so they read identically on a packing slip. */
+var EM_GROUPS=[
+ {g:"White · high CRI (Nichia 519a)", note:"The default all-rounder. Natural colour, warm to cool.",
+  items:["519a - 1800K","519a - 2700K","519a - 3000K","519a - 3500K","519a - 4000K","519a - 4500K","519a - 5000K","519a - 5700K"]},
+ {g:"White · thrower (SFT40)", note:"Tighter, further-reaching beam. Brighter, lower colour quality.",
+  items:["SFT40 - 3000K","SFT40 - 5000K","SFT40 - 6500K"]},
+ {g:"White · compact (SST20)", note:"High CRI with a tighter beam than the 519a.",
+  items:["SST20 - 4000K","SST20 - 5000K"]},
+ {g:"Single colour", note:"One fixed colour, not white. For signalling, night work and hunting.",
+  items:["CSLNM1.TG (W1)","KB CSLNM1.14 (Blue)","KP CSLNM1.F1 (Green)","KY CSLNM1.FY (Orange)","KR CSLNM1.23 (Red)","SST-20-DR 660nm (Deep Red)"]},
+ {g:"Infrared · night vision only", note:"Invisible to the naked eye. Needs a NV device to be useful.",
+  items:["IR 940nm (SST-10) 1 mode only = 100%","IR 850nm (SST-10) 1 mode only = 100%"]},
+ {g:"Dealer's choice", note:"We pick something interesting from what is on the bench.",
+  items:["Mystery - Never know what ya might get"]}
 ];
+var REFLECTORS=["Default","OP - Orange Peel (More Spill)","SMO - Smooth (More Throw)"];
+var OPTICS=["Default (Glass)","Flat 5°","Flat 10°","Flat 15°","Flat 20°","Flat 30°","Flat 45°","Flat 60°","Flat 85°",
+"Matte 15°","Matte 30°","Matte 38°","Matte 45°","Matte 85°","Stripe 15°*60°","Stripe 25°*60°","Stripe 45°*60°",
+"Bead 10°","Bead 15°","Bead 20°","Bead 25°","Bead 30°","Bead 38°","Bead 45°","Bead 60°","Bead 85°"];
+var CONSENT="I understand that this item is non-returnable/non-refundable. Please double check your order for accuracy before placing it.";
+function emGroupOf(v){for(var i=0;i<EM_GROUPS.length;i++){if(EM_GROUPS[i].items.indexOf(v)>-1)return EM_GROUPS[i]}return null}
+function isIR(v){return !!v&&v.indexOf("IR ")===0}
+function isColour(v){var g=emGroupOf(v);return !!g&&g.g==="Single colour"}
+/* Which reflector we suggest for an emitter (customer may override). */
+function suggestRefl(v){
+  if(!v)return null;
+  if(v.indexOf("519a")===0||v.indexOf("SST20")===0)return "OP - Orange Peel (More Spill)";
+  if(v.indexOf("SFT40")===0||v.indexOf("CSLNM1")>-1)return "SMO - Smooth (More Throw)";
+  return "Default";
+}
 
 /* ---------------- rule engine ---------------- */
-var S={host:null,em:null,cct:null,sw:null,led:null,btn:null};
+var S={host:null,em:null,refl:null,optic:null,ack:false,sw:null,led:null,btn:null};
 function money(n){return "$"+n.toFixed(2)}
 function purl(h){return P+h}
 function canonCount(v){var s={},k;HOSTS.forEach(function(h){if(h.v===v)s[h.canon||h.id]=1});
@@ -146,10 +159,14 @@ function lines(){
   var L=[];
   if(S.host){
     var pr=null;
-    if(S.em){pr={"Emitter":S.em.n,"Colour temperature":S.cct||"—","Reflector":S.em.refl+" (matched to emitter)"};}
-    L.push({n:"Convoy S2+ — "+S.host.n,p:S.host.p,vid:S.host.vid,h:S.host.h,sw:S.host.sw,
+    if(S.em){
+      pr={"Emitter":S.em,"Reflector":S.refl||"Default","Optic / Lens":S.optic||"Default (Glass)"};
+      if(S.sw)pr["Install service"]="Yes - install the "+S.sw.n+" I am buying with this light";
+      if(S.ack)pr["Build acknowledgement"]="Accepted - non-returnable custom build";
+    }
+    L.push({n:"Convoy S2+ - "+S.host.n,p:S.host.p,vid:S.host.vid,h:S.host.h,sw:S.host.sw,
             oos:!!S.host.oos,props:pr,
-            sub:S.em?(S.em.n+(S.cct?" · "+S.cct:"")+" · "+S.em.refl+" reflector"):null});
+            sub:S.em?(S.em+" · "+(S.refl||"Default")+" · "+(S.optic||"Default (Glass)")):null});
   }
   if(S.host&&S.host.v==="full"&&S.sw){
     var p=S.sw.p,vid=null;
@@ -180,8 +197,10 @@ function ready(){
   var L=lines(); if(!L.length)return false;
   for(var i=0;i<L.length;i++){ if(L[i].pend||!L[i].vid)return false }
   if(S.host&&S.host.v==="full"&&!S.sw)return false;
-  if(S.em&&!S.cct)return false;
   if(!S.em)return false;
+  if(!S.refl)return false;
+  if(!S.optic)return false;
+  if(!S.ack)return false;
   if(S.host&&S.host.v==="unknown")return false;
   if(S.host&&S.host.oos)return false;
   return true;

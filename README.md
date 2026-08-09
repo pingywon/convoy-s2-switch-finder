@@ -103,7 +103,7 @@ The lit tail is a **locator** — it marks where the flashlight is on a bedside 
 It does not light a room, and the guide says so plainly rather than overselling it. Colour affects
 how easy it is to spot.
 
-## Emitter pass-through (Route A) — DRAFT, needs owner sign-off
+## Custom-build options in the walkthrough
 
 The S2+ has **no emitter option anywhere**: `convoy-s2` exposes one Shopify option (`Color`, 11
 values), the installed YMQ Product Options app renders only `Color`, and the live product page has
@@ -125,9 +125,16 @@ the POST fails, which silently drops the emitter note.
 **Reflector is derived, never asked** — smooth for SST20/SST40/SFT40/XP-L HI/OSRAM, orange peel for
 219B/219C/519A/719A/B35AM/LH351D, straight from the product's own `spec_table`.
 
-**The `EMITTERS` array in `core.js` is a DRAFT.** It is derived from that spec-table pairing plus
-CCTs GC already sells on other Convoy listings. It is not confirmed inventory — trim it before
-launch. **Line-item properties carry no price**, so any emitter upcharge is manual today.
+**The option set is transcribed read-only from the live S2+ custom-build option set** (22 emitters,
+26 optics, 3 reflectors, plus the required non-returnable acknowledgement). Value strings are kept
+verbatim so a builder order reads the same as one placed through the product page. This is our own
+implementation with our own property keys — it does not hook, extend or depend on the options app.
+
+**Nothing outside the three unlinked pages is touched:** no listing, no PDP, no option template.
+Verified after every deploy — `convoy-s2` still reads `updatedAt 2026-08-08T05:11:01Z`, options
+`['Color']`, and the `ymq_option` metafield is untouched at `2026-04-12`.
+
+**Line-item properties carry no price**, so any option upcharge remains manual.
 
 **No product listing was modified to build this.**
 

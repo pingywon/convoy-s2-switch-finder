@@ -206,30 +206,43 @@ var RUBBTN={h:"convoy-color-rubber-tail-cap-buttons-for-s2-c8-and-more",p:0.25,
  cols:[["Black","#1e2124","50300036677947"],["Orange","#c25a1c","50300036710715"],["Green (does NOT glow)","#1f6b3a","50300036743483"],["Blue (glow)","#20509a","50300036776251"],["Translucent / White","#e8e8e6","50300036809019"]]};
 
 
-/* ================== DRAFT — NOT OWNER-APPROVED ==================
-   Emitter list derived from the S2+ spec_table reflector pairing on the live
-   product ("Smooth for SST20/SST40/SFT40/XPL HI/Osram; orange peel for
-   219/519A/LH351D/B35AM/719A") plus the CCTs GC already sells on other Convoy
-   listings. NO product listing was changed to produce this.
-   Reflector is DERIVED from the emitter, never asked.
-   ---- OWNER: confirm/trim this list and the CCTs before this goes live. ---- */
-var EMITTERS=[
- {k:"519a", n:"Nichia 519A",  refl:"Orange peel", cri:"High CRI ~90", note:"The default crowd favourite. Neutral, natural colour.",
-  ccts:["2700K","3000K","3500K","4000K","4500K","5000K","5700K"]},
- {k:"219b", n:"Nichia 219B",  refl:"Orange peel", cri:"Very high CRI ~92", note:"Rosy, best-in-class colour. Lower output.", ccts:["4500K"]},
- {k:"219c", n:"Nichia 219C",  refl:"Orange peel", cri:"High CRI ~90", note:"Neutral high-CRI, brighter than 219B.", ccts:["4000K","5000K"]},
- {k:"719a", n:"Nichia 719A",  refl:"Orange peel", cri:"Very high CRI ~93", note:"Modern high-CRI flooder.", ccts:["4000K","5000K"]},
- {k:"b35am",n:"Nichia B35AM", refl:"Orange peel", cri:"Ultra high CRI ~98", note:"Reference-grade colour. The connoisseur pick.", ccts:["4500K","5000K"]},
- {k:"lh351d",n:"Samsung LH351D",refl:"Orange peel",cri:"High CRI ~90", note:"Wide flood, strong output for the CRI.", ccts:["4000K","5000K"]},
- {k:"sst20",n:"Luminus SST-20",refl:"Smooth",     cri:"High CRI ~95", note:"High CRI with a tighter beam than the Nichias.", ccts:["4000K","6500K"]},
- {k:"sst40",n:"Luminus SST-40",refl:"Smooth",     cri:"Standard CRI ~70",note:"Brightest of the budget options. Output over colour.", ccts:["5000K","6500K"]},
- {k:"sft40",n:"Luminus SFT-40",refl:"Smooth",     cri:"Standard CRI ~70",note:"Throwier than SST-40 — reaches further.", ccts:["3000K","5000K","6500K"]},
- {k:"xplhi",n:"Cree XP-L HI", refl:"Smooth",      cri:"Standard CRI ~70",note:"Classic thrower emitter, tight hotspot.", ccts:["5000K","6500K"]},
- {k:"osram",n:"OSRAM W1 / W2", refl:"Smooth",     cri:"Low CRI ~70", note:"Maximum throw. Small, intense hotspot.", ccts:["6500K"]}
+
+
+/* ===== Build options, transcribed from the live S2+ custom-build option set =====
+   Read-only transcription. No listing, PDP or option template was modified.
+   Value strings are kept verbatim so they read identically on a packing slip. */
+var EM_GROUPS=[
+ {g:"White · high CRI (Nichia 519a)", note:"The default all-rounder. Natural colour, warm to cool.",
+  items:["519a - 1800K","519a - 2700K","519a - 3000K","519a - 3500K","519a - 4000K","519a - 4500K","519a - 5000K","519a - 5700K"]},
+ {g:"White · thrower (SFT40)", note:"Tighter, further-reaching beam. Brighter, lower colour quality.",
+  items:["SFT40 - 3000K","SFT40 - 5000K","SFT40 - 6500K"]},
+ {g:"White · compact (SST20)", note:"High CRI with a tighter beam than the 519a.",
+  items:["SST20 - 4000K","SST20 - 5000K"]},
+ {g:"Single colour", note:"One fixed colour, not white. For signalling, night work and hunting.",
+  items:["CSLNM1.TG (W1)","KB CSLNM1.14 (Blue)","KP CSLNM1.F1 (Green)","KY CSLNM1.FY (Orange)","KR CSLNM1.23 (Red)","SST-20-DR 660nm (Deep Red)"]},
+ {g:"Infrared · night vision only", note:"Invisible to the naked eye. Needs a NV device to be useful.",
+  items:["IR 940nm (SST-10) 1 mode only = 100%","IR 850nm (SST-10) 1 mode only = 100%"]},
+ {g:"Dealer's choice", note:"We pick something interesting from what is on the bench.",
+  items:["Mystery - Never know what ya might get"]}
 ];
+var REFLECTORS=["Default","OP - Orange Peel (More Spill)","SMO - Smooth (More Throw)"];
+var OPTICS=["Default (Glass)","Flat 5°","Flat 10°","Flat 15°","Flat 20°","Flat 30°","Flat 45°","Flat 60°","Flat 85°",
+"Matte 15°","Matte 30°","Matte 38°","Matte 45°","Matte 85°","Stripe 15°*60°","Stripe 25°*60°","Stripe 45°*60°",
+"Bead 10°","Bead 15°","Bead 20°","Bead 25°","Bead 30°","Bead 38°","Bead 45°","Bead 60°","Bead 85°"];
+var CONSENT="I understand that this item is non-returnable/non-refundable. Please double check your order for accuracy before placing it.";
+function emGroupOf(v){for(var i=0;i<EM_GROUPS.length;i++){if(EM_GROUPS[i].items.indexOf(v)>-1)return EM_GROUPS[i]}return null}
+function isIR(v){return !!v&&v.indexOf("IR ")===0}
+function isColour(v){var g=emGroupOf(v);return !!g&&g.g==="Single colour"}
+/* Which reflector we suggest for an emitter (customer may override). */
+function suggestRefl(v){
+  if(!v)return null;
+  if(v.indexOf("519a")===0||v.indexOf("SST20")===0)return "OP - Orange Peel (More Spill)";
+  if(v.indexOf("SFT40")===0||v.indexOf("CSLNM1")>-1)return "SMO - Smooth (More Throw)";
+  return "Default";
+}
 
 /* ---------------- rule engine ---------------- */
-var S={host:null,em:null,cct:null,sw:null,led:null,btn:null};
+var S={host:null,em:null,refl:null,optic:null,ack:false,sw:null,led:null,btn:null};
 function money(n){return "$"+n.toFixed(2)}
 function purl(h){return P+h}
 function canonCount(v){var s={},k;HOSTS.forEach(function(h){if(h.v===v)s[h.canon||h.id]=1});
@@ -297,10 +310,14 @@ function lines(){
   var L=[];
   if(S.host){
     var pr=null;
-    if(S.em){pr={"Emitter":S.em.n,"Colour temperature":S.cct||"—","Reflector":S.em.refl+" (matched to emitter)"};}
-    L.push({n:"Convoy S2+ — "+S.host.n,p:S.host.p,vid:S.host.vid,h:S.host.h,sw:S.host.sw,
+    if(S.em){
+      pr={"Emitter":S.em,"Reflector":S.refl||"Default","Optic / Lens":S.optic||"Default (Glass)"};
+      if(S.sw)pr["Install service"]="Yes - install the "+S.sw.n+" I am buying with this light";
+      if(S.ack)pr["Build acknowledgement"]="Accepted - non-returnable custom build";
+    }
+    L.push({n:"Convoy S2+ - "+S.host.n,p:S.host.p,vid:S.host.vid,h:S.host.h,sw:S.host.sw,
             oos:!!S.host.oos,props:pr,
-            sub:S.em?(S.em.n+(S.cct?" · "+S.cct:"")+" · "+S.em.refl+" reflector"):null});
+            sub:S.em?(S.em+" · "+(S.refl||"Default")+" · "+(S.optic||"Default (Glass)")):null});
   }
   if(S.host&&S.host.v==="full"&&S.sw){
     var p=S.sw.p,vid=null;
@@ -331,8 +348,10 @@ function ready(){
   var L=lines(); if(!L.length)return false;
   for(var i=0;i<L.length;i++){ if(L[i].pend||!L[i].vid)return false }
   if(S.host&&S.host.v==="full"&&!S.sw)return false;
-  if(S.em&&!S.cct)return false;
   if(!S.em)return false;
+  if(!S.refl)return false;
+  if(!S.optic)return false;
+  if(!S.ack)return false;
   if(S.host&&S.host.v==="unknown")return false;
   if(S.host&&S.host.oos)return false;
   return true;
@@ -385,38 +404,59 @@ function render(){
     '</b> are pressed in at the factory and only take a new centre button.</p>'+inner);
 
 
-  /* ---- 2. emitter (DRAFT list) — reflector is derived, never asked ---- */
-  var e2state = !h?'lock':(S.em&&S.cct?'done':'active');
-  var e2note = !h?'Pick a light first':(S.em?(S.em.n+(S.cct?' · '+S.cct:' · pick a temperature')):'Choose an emitter');
+  /* ---- 2. emitter (real option set) ---- */
+  var e2state=!h?'lock':(S.em?'done':'active');
+  var e2note=!h?'Pick a light first':(S.em||'Choose an emitter');
   var e2inner;
-  if(!h){ e2inner='<p class="lede">Choose your light above and this unlocks.</p>' }
+  if(!h){e2inner='<p class="lede">Choose your light above and this unlocks.</p>'}
   else{
     e2inner='<div class="msg msg-rule">'+ICO.warn+'<div><b>This is what the light actually looks like.</b>'+
-     '<p>The emitter sets colour and beam. We match the reflector to it for you &mdash; smooth for throwers, '+
-     'orange peel for the high-CRI emitters &mdash; so you never have to pair them yourself.</p></div></div>'+
-     '<div class="pgrid pgrid-3">'+EMITTERS.map(function(e){
-       return '<button class="pick swc" type="button" data-em="'+e.k+'" aria-pressed="'+(S.em&&S.em.k===e.k)+'">'+
-        '<span class="swn">'+e.n+'</span>'+
-        '<span class="swt '+(e.refl==='Smooth'?'nolit':'lit')+'">'+e.cri+'</span>'+
-        '<span class="swd">'+e.note+'</span>'+
-        '<span class="swa">'+e.refl+' reflector &middot; '+e.ccts.length+' temperature'+(e.ccts.length>1?'s':'')+'</span></button>'}).join('')+'</div>';
-    if(S.em){
-      e2inner+='<div class="lbl">Colour temperature &mdash; '+S.em.n+'</div><div class="pgrid pgrid-s">'+
-       S.em.ccts.map(function(t){
-         return optBtn('opt',t,null,(S.cct===t),'data-cct="'+t+'"',
-           t==='2700K'||t==='3000K'?'<span class="star star-off">Warm</span>':
-           (t==='6500K'?'<span class="star star-off">Cool</span>':''))}).join('')+'</div>'+
-       '<p class="fine">Reflector: <b>'+S.em.refl+'</b> — matched to the '+S.em.n+' automatically.</p>';
-    }
+     '<p>The emitter sets colour and beam. Most people want a white one &mdash; the 519a group is the '+
+     'safe pick. The others are for specific jobs.</p></div></div>'+
+     EM_GROUPS.map(function(gr){
+      return '<div class="grp"><div class="grpt">'+gr.g+'</div>'+
+       '<p class="lede" style="margin-bottom:10px">'+gr.note+'</p><div class="pgrid">'+
+       gr.items.map(function(v){
+         var badge = isIR(v)?'<span class="star star-off">One mode only</span>':
+                     (v.indexOf('Mystery')===0?'<span class="star star-off">Surprise</span>':'');
+         return optBtn('opt',v,null,(S.em===v),'data-em="'+v.replace(/"/g,'&quot;')+'"',badge)}).join('')+
+       '</div></div>'}).join('');
+    if(isIR(S.em))e2inner+='<div class="msg msg-warn">'+ICO.warn+'<div><b>Infrared is invisible.</b>'+
+      '<p>You will see nothing by eye &mdash; it only works through night-vision gear, and it runs at '+
+      '100% output with no other modes.</p></div></div>';
+    else if(isColour(S.em))e2inner+='<div class="msg msg-rule">'+ICO.warn+'<div><b>This is a single-colour emitter.</b>'+
+      '<p>It only puts out that colour &mdash; it will not work as a general white flashlight.</p></div></div>';
   }
   out+=step(2,'Pick the emitter',e2state,e2note,e2inner);
 
+  /* ---- 3. beam shaping: reflector + optic ---- */
+  var b3state=!S.em?'lock':((S.refl&&S.optic)?'done':'active');
+  var b3note=!S.em?'Pick an emitter first':((S.refl&&S.optic)?(S.refl.split(' - ')[0]+' · '+S.optic):'Choose both');
+  var b3inner;
+  if(!S.em){b3inner='<p class="lede">Pick an emitter and this unlocks.</p>'}
+  else{
+    var sug=suggestRefl(S.em);
+    b3inner='<div class="lbl">Reflector</div><p class="lede" style="margin-bottom:10px">'+
+      'We suggest <b>'+sug+'</b> for the '+S.em+', but it is your call.</p><div class="pgrid">'+
+      REFLECTORS.map(function(r){return optBtn('opt'+(r===sug?' opt-star':''),r,null,(S.refl===r),
+        'data-refl="'+r.replace(/"/g,'&quot;')+'"',r===sug?'<span class="star">Suggested</span>':'')}).join('')+'</div>'+
+      '<div class="lbl">Optic / lens</div>'+
+      '<p class="lede" style="margin-bottom:10px">Glass is the standard. The angled optics trade throw for a '+
+      'wider, softer flood &mdash; only pick one if you know you want it.</p><div class="pgrid pgrid-s">'+
+      OPTICS.map(function(o,i){
+        var hide=(i>0&&!S.showOptics)?' style="display:none"':'';
+        return '<span'+hide+' class="opticwrap">'+optBtn('opt'+(i===0?' opt-star':''),o,null,(S.optic===o),
+          'data-optic="'+o.replace(/"/g,'&quot;')+'"',i===0?'<span class="star">Standard</span>':'')+'</span>'}).join('')+
+      '</div>'+(S.showOptics?'':'<button class="btnlink" type="button" id="moreoptics">Show all '+OPTICS.length+' optics</button>');
+  }
+  out+=step(3,'Shape the beam',b3state,b3note,b3inner);
+
   /* ---- 3. the switch ---- */
-  var s2state = (!h||!S.em||!S.cct)?'lock':(h.v==='full'?(S.sw?'done':'active'):'lock');
+  var s2state = (!h||!S.em||!S.refl||!S.optic)?'lock':(h.v==='full'?(S.sw?'done':'active'):'lock');
   var s2note = !h?'Pick a light first':(h.v==='center'?'Not available on this finish':(S.sw?S.sw.n:''));
   var s2inner;
   if(!h){ s2inner='<p class="lede">Choose your light above and this unlocks.</p>' }
-  else if(!S.em||!S.cct){ s2inner='<p class="lede">Pick your emitter and colour temperature first.</p>' }
+  else if(!S.em||!S.refl||!S.optic){ s2inner='<p class="lede">Pick your emitter and beam first.</p>' }
   else if(h.v==='center'){
     s2inner='<div class="msg msg-warn">'+ICO.warn+'<div><b>The '+h.n+' switch does not come out.</b>'+
      '<p>It is pressed into the tail cap at the factory. You cannot fit a different switch — but you '+
@@ -434,7 +474,7 @@ function render(){
         '<span class="swd">'+sw.pitch+'</span><span class="swa">'+sw.act+'</span></button>'}).join('')+'</div>';
   }
   if(h&&h.v==='unknown')s2state='lock';
-  out+=step(3,'Pick your switch',s2state,s2note,s2inner);
+  out+=step(4,'Pick your switch',s2state,s2note,s2inner);
 
   /* ---- 3. LED colour ---- */
   var needLed = !!(h&&h.v==='full'&&S.sw&&S.sw.cols.length);
@@ -449,7 +489,7 @@ function render(){
         return optBtn('opt',c[0],c[1],(S.led&&S.led[0]===c[0]),'data-led="'+c[0]+'"','')}).join('')+'</div>'
     : '<p class="lede">'+(S.sw&&!S.sw.lit?'The forward clicky is not illuminated, so there is no LED colour to pick.'
         :'Pick an illuminated switch above and the colours unlock.')+'</p>';
-  out+=step(4,'Pick the LED colour',s3state,s3note,s3inner);
+  out+=step(5,'Pick the LED colour',s3state,s3note,s3inner);
 
   /* ---- 4. button (metal centre, or coloured rubber tailcap) ---- */
   var fam=takesButton();
@@ -485,7 +525,7 @@ function render(){
          'data-btn="'+c[0]+'"',isC?'<span class="star">Double Clear</span>':'')}).join('')+
        optBtn('opt',BRASSBTN.n,BRASSBTN.sw,(S.btn&&S.btn[0]==='Brass'),'data-btn="Brass"','')+'</div>';
   }
-  out+=step(5,s4title,s4state,s4note,s4inner);
+  out+=step(6,s4title,s4state,s4note,s4inner);
 
   /* ---- 5. result ---- */
   var L=lines(),rdy=ready();
@@ -499,9 +539,12 @@ function render(){
        '<span class="pn">'+l.n+(l.pend?' <em>— choose a colour</em>':'')+(l.oos?' <em>— sold out</em>':'')+
        (l.sub?'<span class="psub">'+l.sub+'</span>':'')+'</span>'+
        '</a>'}).join('')+'</div>'+
-     '<p class="fine">Emitter, reflector and lens are chosen on the S2+ product page — open the light above to pick them.</p>';
+     (S.sw?'<div class="msg msg-dc"><div><b>We will fit the '+S.sw.n+' for you.</b>'+
+       '<p>Because the switch is on the same order, it ships installed &mdash; you do not have to do it yourself.</p></div></div>':'')+
+     '<label class="ackbox'+(S.ack?' on':'')+'"><input type="checkbox" id="ack"'+(S.ack?' checked':'')+'>'+
+     '<span>'+CONSENT+'</span></label>';
   }
-  out+=step(6,'Your build',rdy?'done':(L.length?'active':'lock'),rdy?'Ready':'',res);
+  out+=step(7,'Your build',rdy?'done':(L.length?'active':'lock'),rdy?'Ready':'',res);
   R.innerHTML='<div class="steps">'+out+'</div>'+
     '<div class="bar'+(L.length?' on':'')+'"><div class="barin"><div class="bartxt">'+
     (rdy?'<b>'+L.length+' item'+(L.length>1?'s':'')+' ready</b><span>Total shown at checkout</span>'
@@ -523,15 +566,22 @@ function render(){
 function wire(){
   R.querySelectorAll('[data-h]').forEach(function(b){b.addEventListener('click',function(){
     var n=HOSTS.filter(function(x){return x.id===b.dataset.h})[0];
-    S.host=(S.host&&S.host.id===n.id)?null:n; S.em=null;S.cct=null;S.sw=null;S.led=null;S.btn=null; render();
+    S.host=(S.host&&S.host.id===n.id)?null:n; S.em=null;S.refl=null;S.optic=null;S.ack=false;S.sw=null;S.led=null;S.btn=null; render();
     var nx=R.querySelector('.stp[data-s="active"]'); if(nx)nx.scrollIntoView({behavior:'smooth',block:'center'})})});
   R.querySelectorAll('[data-em]').forEach(function(b){b.addEventListener('click',function(){
-    var e=EMITTERS.filter(function(x){return x.k===b.dataset.em})[0];
-    if(S.em&&S.em.k===e.k){S.em=null;S.cct=null;}else{S.em=e;S.cct=(e.ccts.length===1?e.ccts[0]:null);}
-    render();})});
-  R.querySelectorAll('[data-cct]').forEach(function(b){b.addEventListener('click',function(){
-    S.cct=(S.cct===b.dataset.cct)?null:b.dataset.cct; render();
+    var v=b.dataset.em;
+    if(S.em===v){S.em=null;S.refl=null;S.optic=null;}
+    else{S.em=v;S.refl=suggestRefl(v);S.optic=OPTICS[0];}
+    render();
     var nx=R.querySelector('.stp[data-s="active"]'); if(nx)nx.scrollIntoView({behavior:'smooth',block:'center'})})});
+  R.querySelectorAll('[data-refl]').forEach(function(b){b.addEventListener('click',function(){
+    S.refl=b.dataset.refl; render()})});
+  R.querySelectorAll('[data-optic]').forEach(function(b){b.addEventListener('click',function(){
+    S.optic=b.dataset.optic; render()})});
+  var mo=document.getElementById('moreoptics');
+  if(mo)mo.addEventListener('click',function(){S.showOptics=true;render()});
+  var ak=document.getElementById('ack');
+  if(ak)ak.addEventListener('change',function(){S.ack=ak.checked;render()});
   R.querySelectorAll('[data-sw]').forEach(function(b){b.addEventListener('click',function(){
     var n=SWITCHES.filter(function(x){return x.id===b.dataset.sw})[0];
     S.sw=(S.sw&&S.sw.id===n.id)?null:n; S.led=null; if(!takesButton())S.btn=null; render();
