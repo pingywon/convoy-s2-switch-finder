@@ -54,8 +54,31 @@ var BRASSBTN={n:"Brass",h:"convoy-brass-button-for-metal-illuminated-switch",p:1
 var RUBBTN={h:"convoy-color-rubber-tail-cap-buttons-for-s2-c8-and-more",p:0.25,
  cols:[["Black","#1e2124","50300036677947"],["Orange","#c25a1c","50300036710715"],["Green (does NOT glow)","#1f6b3a","50300036743483"],["Blue (glow)","#20509a","50300036776251"],["Translucent / White","#e8e8e6","50300036809019"]]};
 
+
+/* ================== DRAFT — NOT OWNER-APPROVED ==================
+   Emitter list derived from the S2+ spec_table reflector pairing on the live
+   product ("Smooth for SST20/SST40/SFT40/XPL HI/Osram; orange peel for
+   219/519A/LH351D/B35AM/719A") plus the CCTs GC already sells on other Convoy
+   listings. NO product listing was changed to produce this.
+   Reflector is DERIVED from the emitter, never asked.
+   ---- OWNER: confirm/trim this list and the CCTs before this goes live. ---- */
+var EMITTERS=[
+ {k:"519a", n:"Nichia 519A",  refl:"Orange peel", cri:"High CRI ~90", note:"The default crowd favourite. Neutral, natural colour.",
+  ccts:["2700K","3000K","3500K","4000K","4500K","5000K","5700K"]},
+ {k:"219b", n:"Nichia 219B",  refl:"Orange peel", cri:"Very high CRI ~92", note:"Rosy, best-in-class colour. Lower output.", ccts:["4500K"]},
+ {k:"219c", n:"Nichia 219C",  refl:"Orange peel", cri:"High CRI ~90", note:"Neutral high-CRI, brighter than 219B.", ccts:["4000K","5000K"]},
+ {k:"719a", n:"Nichia 719A",  refl:"Orange peel", cri:"Very high CRI ~93", note:"Modern high-CRI flooder.", ccts:["4000K","5000K"]},
+ {k:"b35am",n:"Nichia B35AM", refl:"Orange peel", cri:"Ultra high CRI ~98", note:"Reference-grade colour. The connoisseur pick.", ccts:["4500K","5000K"]},
+ {k:"lh351d",n:"Samsung LH351D",refl:"Orange peel",cri:"High CRI ~90", note:"Wide flood, strong output for the CRI.", ccts:["4000K","5000K"]},
+ {k:"sst20",n:"Luminus SST-20",refl:"Smooth",     cri:"High CRI ~95", note:"High CRI with a tighter beam than the Nichias.", ccts:["4000K","6500K"]},
+ {k:"sst40",n:"Luminus SST-40",refl:"Smooth",     cri:"Standard CRI ~70",note:"Brightest of the budget options. Output over colour.", ccts:["5000K","6500K"]},
+ {k:"sft40",n:"Luminus SFT-40",refl:"Smooth",     cri:"Standard CRI ~70",note:"Throwier than SST-40 — reaches further.", ccts:["3000K","5000K","6500K"]},
+ {k:"xplhi",n:"Cree XP-L HI", refl:"Smooth",      cri:"Standard CRI ~70",note:"Classic thrower emitter, tight hotspot.", ccts:["5000K","6500K"]},
+ {k:"osram",n:"OSRAM W1 / W2", refl:"Smooth",     cri:"Low CRI ~70", note:"Maximum throw. Small, intense hotspot.", ccts:["6500K"]}
+];
+
 /* ---------------- rule engine ---------------- */
-var S={host:null,sw:null,led:null,btn:null};
+var S={host:null,em:null,cct:null,sw:null,led:null,btn:null};
 function money(n){return "$"+n.toFixed(2)}
 function purl(h){return P+h}
 function canonCount(v){var s={},k;HOSTS.forEach(function(h){if(h.v===v)s[h.canon||h.id]=1});
@@ -121,7 +144,13 @@ function glow(){
 /* Everything currently in the build, in cart order. */
 function lines(){
   var L=[];
-  if(S.host)L.push({n:"Convoy S2+ — "+S.host.n,p:S.host.p,vid:S.host.vid,h:S.host.h,sw:S.host.sw,oos:!!S.host.oos});
+  if(S.host){
+    var pr=null;
+    if(S.em){pr={"Emitter":S.em.n,"Colour temperature":S.cct||"—","Reflector":S.em.refl+" (matched to emitter)"};}
+    L.push({n:"Convoy S2+ — "+S.host.n,p:S.host.p,vid:S.host.vid,h:S.host.h,sw:S.host.sw,
+            oos:!!S.host.oos,props:pr,
+            sub:S.em?(S.em.n+(S.cct?" · "+S.cct:"")+" · "+S.em.refl+" reflector"):null});
+  }
   if(S.host&&S.host.v==="full"&&S.sw){
     var p=S.sw.p,vid=null;
     if(S.sw.cols.length){ if(S.led){p=S.led[3];vid=S.led[2];} }
@@ -137,6 +166,10 @@ function lines(){
   }
   return L;
 }
+function cartItems(){
+  return lines().filter(function(l){return l.vid&&!l.oos}).map(function(l){
+    var o={id:Number(l.vid),quantity:1}; if(l.props)o.properties=l.props; return o});
+}
 function cartUrl(){
   if(!ready())return null;
   var v=lines().filter(function(l){return l.vid&&!l.oos}).map(function(l){return l.vid+":1"});
@@ -147,6 +180,8 @@ function ready(){
   var L=lines(); if(!L.length)return false;
   for(var i=0;i<L.length;i++){ if(L[i].pend||!L[i].vid)return false }
   if(S.host&&S.host.v==="full"&&!S.sw)return false;
+  if(S.em&&!S.cct)return false;
+  if(!S.em)return false;
   if(S.host&&S.host.v==="unknown")return false;
   if(S.host&&S.host.oos)return false;
   return true;
