@@ -110,8 +110,7 @@ function buildNo(){
 function bumpBuildNo(){try{sessionStorage.setItem("gcS2BuildNo",String(buildNo()+1))}catch(e){}}
 function buildTag(){
   if(!S.host)return null;
-  var base="Build "+buildNo()+" — "+S.host.n+(S.em?" · "+S.em:"");
-  return S.nick?("Build "+buildNo()+" — "+S.nick+" ("+S.host.n+(S.em?" · "+S.em:"")+")"):base;
+  return S.nick?String(S.nick).trim():("Build "+buildNo());
 }
 
 /* ---------------- rule engine ---------------- */
@@ -133,8 +132,7 @@ function takesButton(){
   if(S.host.v==="center")return "metal";
   if(!S.sw)return false;
   if(S.sw.takesButton)return "metal";
-  if(S.sw.id==="rubber")return "rubber";
-  return false;
+  return "rubber";   /* rubber illuminated AND forward clicky both take a rubber tailcap button */
 }
 function btnSet(){return takesButton()==="rubber"?RUBBTN:BTN}
 /* Rubber tailcap colours differ in how much light they pass. */
@@ -180,43 +178,55 @@ function glow(){
 }
 /* Everything currently in the build, in cart order. */
 function lines(){
-  var L=[];
+  var L=[],BT=buildTag();
   if(S.host){
-    var pr=null;
+    var pr={};
+    if(BT)pr["Build"]=BT;
     if(S.em){
-      pr={"Emitter":S.em,"Reflector":S.refl||"Default","Optic / Lens":S.optic||"Default (Glass)"};
-      if(S.sw)pr["Install service"]="Yes - install the "+S.sw.n+" I am buying with this light";
-      else if(S.btn)pr["Install service"]="Yes - fit the "+S.btn[0]+" centre button I am buying with this light";
-      if(S.ack)pr["Build acknowledgement"]="Accepted - non-returnable custom build";
+      pr["Emitter"]=S.em;
+      pr["Reflector"]=S.refl||"Default";
+      pr["Optic / lens"]=S.optic||"Default (Glass)";
     }
-    L.push({role:"The light",n:"Convoy S2+ - "+S.host.n,p:S.host.p,vid:S.host.vid,h:S.host.h,sw:S.host.sw,
-            oos:!!S.host.oos,props:pr,
+    var fit=[];
+    if(S.sw)fit.push(S.sw.n+(S.led?" ("+S.led[0]+")":""));
+    if(S.btn)fit.push(S.btn[0]+" button");
+    if(fit.length)pr["Please fit"]=fit.join(" + ");
+    if(S.ack)pr["Agreed"]="Non-returnable custom build";
+    L.push({role:"The light",n:"Convoy S2+ - "+S.host.n,p:S.host.p,vid:S.host.vid,h:S.host.h,
+            sw:S.host.sw,oos:!!S.host.oos,props:pr,
             sub:S.em?(S.em+" · "+(S.refl||"Default")+" · "+(S.optic||"Default (Glass)")):null});
   }
   if(S.host&&S.host.v==="full"&&S.sw){
     var p=S.sw.p,vid=null;
     if(S.sw.cols.length){ if(S.led){p=S.led[3];vid=S.led[2];} }
     else vid="50172242526523";
-    L.push({role:"Tail switch for this light",n:S.sw.n+(S.led?" — "+S.led[0]:""),p:p,vid:vid,h:S.sw.h,sw:null,
+    L.push({role:"Tail switch",n:S.sw.n+(S.led?" — "+S.led[0]:""),p:p,vid:vid,h:S.sw.h,sw:null,
             pend:(S.sw.cols.length&&!S.led)});
   }
   if(S.clip&&S.clip.vid){
-    L.push({role:"Pocket clip for this light",n:S.clip.n,p:0.99,vid:S.clip.vid,h:S.clip.h,sw:null});
+    L.push({role:"Pocket clip",n:S.clip.n,p:0.99,vid:S.clip.vid,h:S.clip.h,sw:null});
   }
   if(S.btn){
     var fam=takesButton(),isBrass=S.btn[0]==="Brass";
-    L.push({role:(fam==="rubber"?"Rubber button for this light":"Centre button for this light"),n:(fam==="rubber"?"Rubber button — ":"Centre button — ")+S.btn[0],
+    L.push({role:(fam==="rubber"?"Rubber tail button":"Centre button"),n:(fam==="rubber"?"Rubber button — ":"Centre button — ")+S.btn[0],
             p:isBrass?BRASSBTN.p:(fam==="rubber"?RUBBTN.p:BTN.p),vid:S.btn[2],
             h:isBrass?BRASSBTN.h:(fam==="rubber"?RUBBTN.h:BTN.h),sw:S.btn[1]});
   }
   return L;
 }
+function goesWith(){
+  if(!S.host)return null;
+  return S.host.n+" S2+"+(S.em?" ("+S.em+")":"");
+}
 function cartItems(){
   var tag=buildTag();
   return lines().filter(function(l){return l.vid&&!l.oos}).map(function(l){
     var p=l.props?JSON.parse(JSON.stringify(l.props)):{};
-    if(tag)p["Build"]=tag;                       /* on EVERY line, not just the light */
-    if(l.role)p["Part of build"]=l.role;
+    if(l.role!=="The light"){                    /* accessory lines stay short and plain */
+      if(tag)p["Build"]=tag;
+      var gw=goesWith(); if(gw)p["Goes with"]=gw;
+      if(l.role)p["Part"]=l.role;
+    }
     var o={id:Number(l.vid),quantity:1};
     if(Object.keys(p).length)o.properties=p;
     return o});
@@ -234,7 +244,6 @@ function ready(){
   if(!S.em)return false;
   if(!S.refl)return false;
   if(!S.optic)return false;
-  if(!S.beamOK)return false;
   if(!S.clip)return false;   /* 'No thanks' counts as answered */
   if(!S.ack)return false;
   if(S.host&&S.host.oos)return false;

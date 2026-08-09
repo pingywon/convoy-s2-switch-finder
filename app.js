@@ -84,8 +84,8 @@ function render(){
   out+=step(2,'Pick the emitter',e2state,e2note,e2inner);
 
   /* ---- 3. beam shaping: reflector + optic ---- */
-  var b3state=!S.em?'lock':(S.beamOK?'done':'active');
-  var b3note=!S.em?'Pick an emitter first':(S.beamOK?(S.refl.split(' - ')[0]+' · '+S.optic):'Defaults chosen — review or change');
+  var b3state=!S.em?'lock':((S.refl&&S.optic)?'done':'active');
+  var b3note=!S.em?'Pick an emitter first':(S.refl.split(' - ')[0]+' · '+S.optic);
   var b3inner;
   if(!S.em){b3inner='<p class="lede">Pick an emitter and this unlocks.</p>'}
   else{
@@ -132,9 +132,9 @@ function render(){
      '<div class="pgrid pgrid-3">'+SWITCHES.map(function(sw){
        /* live preview: shows how THIS switch actually lights, in the chosen colour */
        var lc=(S.sw&&S.sw.id===sw.id&&S.led)?S.led[1]:'#7fe9c4';
-       var mode=sw.id==='rubber'?'face':(sw.id==='metal'?(S.btn&&isClear(S.btn[0])?'both':'ring'):'off');
+       var mode=sw.id==='rubber'?'face':(sw.id==='metal'?((S.sw&&S.sw.id==='metal'&&S.btn&&isClear(S.btn[0]))?'both':'ring'):'off');
        var viz='<span class="tailviz tv-'+mode+'" aria-hidden="true">'+
-               '<span class="tv-ring"></span><span class="tv-mid"></span></span>';
+               '<span class="tv-halo"></span><span class="tv-btn"></span></span>';
        return '<button class="pick swc lit-'+mode+'" type="button" data-sw="'+sw.id+'" style="--ledc:'+lc+'" aria-pressed="'+(S.sw&&S.sw.id===sw.id)+'">'+
         viz+'<span class="swn">'+sw.n+'</span>'+
         '<span class="swt '+(sw.lit?'lit':'nolit')+'">'+(sw.lit?'Lights up':'No light')+'</span>'+
@@ -276,7 +276,6 @@ function wire(){
     var v=b.dataset.em;
     if(S.em===v){S.em=null;S.refl=null;S.optic=null;}
     else{S.em=v;S.refl=suggestRefl(v);S.optic=OPTICS[0];}
-    S.beamOK=false;                       /* a new emitter needs its beam re-confirmed */
     render(); if(S.em)goTo(stepEl(3))})});   /* land ON the beam step, not past it */
   R.querySelectorAll('[data-refl]').forEach(function(b){b.addEventListener('click',function(){
     S.refl=b.dataset.refl; render()})});
@@ -287,8 +286,6 @@ function wire(){
   R.querySelectorAll('[data-clip]').forEach(function(b){b.addEventListener('click',function(){
     var cl=CLIPS.filter(function(x){return x.k===b.dataset.clip})[0];
     S.clip=(S.clip&&S.clip.k===cl.k)?null:cl; render(); if(S.clip)goTo(stepEl(8))})});
-  var bok=document.getElementById('beamok');
-  if(bok)bok.addEventListener('click',function(){S.beamOK=true;render();goTo(stepEl(4))});
   var nk=document.getElementById('nick');
   if(nk)nk.addEventListener('input',function(){S.nick=nk.value;
     var t=R.querySelector('.buildtag');if(t)t.innerHTML='<b>Tagged as:</b> '+e_(buildTag()||'—')+
