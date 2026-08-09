@@ -68,7 +68,8 @@ function render(){
      'safe pick. The others are for specific jobs.</p></div></div>'+
      EM_GROUPS.map(function(gr){
       return '<div class="grp"><div class="grpt">'+gr.g+'</div>'+
-       '<p class="lede" style="margin-bottom:10px">'+gr.note+'</p><div class="pgrid">'+
+       '<p class="lede" style="margin-bottom:10px">'+gr.note+'</p>'+
+       '<div class="pgrid'+(gr.layout==='bar'?' pgrid-bar':(gr.layout==='center'?' pgrid-center':''))+'">'+
        gr.items.map(function(v){
          var badge = isIR(v)?'<span class="star star-off">One mode only</span>':
                      (v.indexOf('Mystery')===0?'<span class="star star-off">Surprise</span>':'');
@@ -132,9 +133,9 @@ function render(){
        /* live preview: shows how THIS switch actually lights, in the chosen colour */
        var lc=(S.sw&&S.sw.id===sw.id&&S.led)?S.led[1]:'#7fe9c4';
        var mode=sw.id==='rubber'?'face':(sw.id==='metal'?(S.btn&&isClear(S.btn[0])?'both':'ring'):'off');
-       var viz='<span class="tailviz tv-'+mode+'" style="--ledc:'+lc+'" aria-hidden="true">'+
+       var viz='<span class="tailviz tv-'+mode+'" aria-hidden="true">'+
                '<span class="tv-ring"></span><span class="tv-mid"></span></span>';
-       return '<button class="pick swc lit-'+mode+'" type="button" data-sw="'+sw.id+'" aria-pressed="'+(S.sw&&S.sw.id===sw.id)+'">'+
+       return '<button class="pick swc lit-'+mode+'" type="button" data-sw="'+sw.id+'" style="--ledc:'+lc+'" aria-pressed="'+(S.sw&&S.sw.id===sw.id)+'">'+
         viz+'<span class="swn">'+sw.n+'</span>'+
         '<span class="swt '+(sw.lit?'lit':'nolit')+'">'+(sw.lit?'Lights up':'No light')+'</span>'+
         '<span class="swd">'+sw.pitch+'</span><span class="swa">'+sw.act+'</span></button>'}).join('')+'</div>';
@@ -170,9 +171,11 @@ function render(){
       S.sw&&S.sw.id==='forward'?'The forward clicky has no illuminated button to swap.':
       'Pick a switch above and the buttons unlock.')+'</p>';
   }else if(fam==='rubber'){
-    s4inner='<div class="msg msg-rule">'+ICO.warn+'<div><b>Optional &mdash; your switch already ships with a button.</b>'+
-     '<p>These swap the rubber tailcap for a different colour. How much they glow varies a lot: '+
-     '<b>Translucent / White</b> passes the most light, and <b>Green does not glow at all</b>.</p></div></div>'+
+    s4inner='<div class="msg msg-plain"><div><b>Optional &mdash; your switch already ships with a button.</b>'+
+     '<p>These swap the rubber tailcap for a different colour, and they sit straight over the '+
+     'illuminated rubber switch &mdash; including a coloured one, so you can stack a colour on a '+
+     'colour. What changes is how much light gets through: <b>Translucent / White</b> passes the '+
+     'most, and <b>Green does not glow at all</b>.</p></div></div>'+
      '<div class="pgrid pgrid-s">'+RUBBTN.cols.map(function(c){
        var g=rubberGlow(c[0]);
        return optBtn('opt'+(g==='most'?' opt-star':''),c[0],c[1],(S.btn&&S.btn[0]===c[0]),
@@ -191,11 +194,28 @@ function render(){
       'which this light cannot take.</p></div></div>')+
      '<div class="pgrid pgrid-s">'+BTN.cols.map(function(c){
        var isC=c[3]&&dc;
-       return optBtn('opt',c[0],c[1],(S.btn&&S.btn[0]===c[0]),
-         'data-btn="'+c[0]+'"',isC?'<span class="tagplain">lights the centre too</span>':'')}).join('')+
+       return optBtn('opt'+(isC?' hastip':''),c[0],c[1],(S.btn&&S.btn[0]===c[0]),
+         'data-btn="'+c[0]+'"'+(isC?' data-tip="Clear lets the centre light up as well as the ring."'
+           +' title="Clear lets the centre light up as well as the ring."':''),'')}).join('')+
        optBtn('opt',BRASSBTN.n,BRASSBTN.sw,(S.btn&&S.btn[0]==='Brass'),'data-btn="Brass"','')+'</div>';
   }
   out+=step(6,s4title,s4state,s4note,s4inner);
+
+  /* ---- pocket clip ---- */
+  var c7state=!h?'lock':(S.clip?'done':'active');
+  var c7note=!h?'Pick a light first':(S.clip?S.clip.n:'Choose one, or decline');
+  var c7inner;
+  if(!h){c7inner='<p class="lede">Choose your light above and this unlocks.</p>'}
+  else{
+    c7inner='<div class="msg msg-plain"><div><b>Clips to the body, so every finish can take one.</b>'+
+     '<p>Pressure-fit slides on and off with no tools and no marks. Screw-on bolts down and will not '+
+     'rotate or slide, but it is a permanent fitting.</p></div></div><div class="pgrid">'+
+     CLIPS.map(function(cl){
+       return '<button class="pick clipopt'+(cl.k==='none'?' clipno':'')+'" type="button" data-clip="'+cl.k+'" aria-pressed="'+
+        (S.clip&&S.clip.k===cl.k)+'"><span class="pn"><b>'+cl.n+'</b><span class="clipd">'+cl.d+'</span></span></button>'
+     }).join('')+'</div>';
+  }
+  out+=step(7,'Add a pocket clip',c7state,c7note,c7inner);
 
   /* ---- 5. result ---- */
   var L=lines(),rdy=ready();
@@ -221,8 +241,14 @@ function render(){
      '<div class="buildtag"><b>Tagged as:</b> '+e_(buildTag()||'—')+
        '<span>Every part above carries this tag, so we know which switch and button belong to which light.</span></div>';
   }
-  out+=step(7,'Your build',rdy?'done':(L.length?'active':'lock'),rdy?'Ready':'',res);
-  R.innerHTML='<div class="steps">'+out+'</div>'+
+  out+=step(8,'Your build',rdy?'done':(L.length?'active':'lock'),rdy?'Ready':'',res);
+  var intro='<div class="namebox"><label for="nick">Name this build</label>'+
+    '<p>Call it anything &mdash; it just keeps every part of this light together, so we know which '+
+    'switch and button belong to which. Really useful if you are ordering more than one custom light.</p>'+
+    '<input type="text" id="nick" maxlength="40" placeholder="e.g. Dad&apos;s light" value="'+
+    String(S.nick||'').replace(/"/g,'&quot;')+'">'+
+    (S.host?'<div class="buildtag"><b>Tagged as:</b> '+e_(buildTag()||'—')+'</div>':'')+'</div>';
+  R.innerHTML=intro+'<div class="steps">'+out+'</div>'+
     '<div class="bar'+(L.length?' on':'')+'"><div class="barin"><div class="bartxt">'+
     (rdy?'<b>'+L.length+' item'+(L.length>1?'s':'')+' ready</b><span>Total shown at checkout</span>'
         :'<b>Keep going</b><span>'+(!h?'Pick your light to start':'Finish the highlighted step')+'</span>')+
@@ -244,12 +270,13 @@ function wire(){
   R.querySelectorAll('[data-h]').forEach(function(b){b.addEventListener('click',function(){
     var n=HOSTS.filter(function(x){return x.id===b.dataset.h})[0];
     S.host=(S.host&&S.host.id===n.id)?null:n;
-    S.em=null;S.refl=null;S.optic=null;S.beamOK=false;S.ack=false;S.sw=null;S.led=null;S.btn=null;
+    S.em=null;S.refl=null;S.optic=null;S.beamOK=false;S.clip=null;S.ack=false;S.sw=null;S.led=null;S.btn=null;
     render(); if(S.host)goTo(stepEl(2))})});
   R.querySelectorAll('[data-em]').forEach(function(b){b.addEventListener('click',function(){
     var v=b.dataset.em;
     if(S.em===v){S.em=null;S.refl=null;S.optic=null;}
     else{S.em=v;S.refl=suggestRefl(v);S.optic=OPTICS[0];}
+    S.beamOK=false;                       /* a new emitter needs its beam re-confirmed */
     render(); if(S.em)goTo(stepEl(3))})});   /* land ON the beam step, not past it */
   R.querySelectorAll('[data-refl]').forEach(function(b){b.addEventListener('click',function(){
     S.refl=b.dataset.refl; render()})});
@@ -257,6 +284,9 @@ function wire(){
     S.optic=b.dataset.optic; render()})});
   var mo=document.getElementById('moreoptics');
   if(mo)mo.addEventListener('click',function(){S.showOptics=!S.showOptics;render();goTo(stepEl(3))});
+  R.querySelectorAll('[data-clip]').forEach(function(b){b.addEventListener('click',function(){
+    var cl=CLIPS.filter(function(x){return x.k===b.dataset.clip})[0];
+    S.clip=(S.clip&&S.clip.k===cl.k)?null:cl; render(); if(S.clip)goTo(stepEl(8))})});
   var bok=document.getElementById('beamok');
   if(bok)bok.addEventListener('click',function(){S.beamOK=true;render();goTo(stepEl(4))});
   var nk=document.getElementById('nick');

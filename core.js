@@ -69,15 +69,26 @@ var EM_GROUPS=[
   items:["SST20 - 4000K","SST20 - 5000K"]},
  {g:"Single colour", note:"One fixed colour, not white. For signalling, night work and hunting.",
   items:["CSLNM1.TG (W1)","KB CSLNM1.14 (Blue)","KP CSLNM1.F1 (Green)","KY CSLNM1.FY (Orange)","KR CSLNM1.23 (Red)","SST-20-DR 660nm (Deep Red)"]},
- {g:"Infrared · night vision only", note:"Invisible to the naked eye. Needs a NV device to be useful.",
+ {g:"Infrared · night vision only", layout:"bar", note:"Invisible to the naked eye. Needs a NV device to be useful.",
   items:["IR 940nm (SST-10) 1 mode only = 100%","IR 850nm (SST-10) 1 mode only = 100%"]},
- {g:"Dealer's choice", note:"We pick something interesting from what is on the bench.",
+ {g:"Dealer's choice", layout:"center", note:"We pick something interesting from what is on the bench.",
   items:["Mystery - Never know what ya might get"]}
 ];
 var REFLECTORS=["Default","OP - Orange Peel (More Spill)","SMO - Smooth (More Throw)"];
 var OPTICS=["Default (Glass)","Flat 5°","Flat 10°","Flat 15°","Flat 20°","Flat 30°","Flat 45°","Flat 60°","Flat 85°",
 "Matte 15°","Matte 30°","Matte 38°","Matte 45°","Matte 85°","Stripe 15°*60°","Stripe 25°*60°","Stripe 45°*60°",
 "Bead 10°","Bead 15°","Bead 20°","Bead 25°","Bead 30°","Bead 38°","Bead 45°","Bead 60°","Bead 85°"];
+var CLIPS=[
+ {k:"press", n:"Pressure-fit clip", d:"Slides on. No tools, no marks, comes off just as easily.",
+  h:"convoy-pocket-clip-for-s2-s2-m1-and-c8", vid:"45014025568571"},
+ {k:"screw-black", n:"Screw-on — Black", d:"Bolts to the body. Will not rotate or slide off.",
+  h:"convoy-pocket-clip-screw-on-for-s2-s3-and-c8", vid:"50299985920315"},
+ {k:"screw-matte", n:"Screw-on — Stonewashed Stainless", d:"Matte steel. Bolts on, hides wear well.",
+  h:"convoy-pocket-clip-screw-on-for-s2-s3-and-c8", vid:"50299985953083"},
+ {k:"screw-shiny", n:"Screw-on — Stainless (Shiny)", d:"Polished steel. Bolts on, brightest finish.",
+  h:"convoy-pocket-clip-screw-on-for-s2-s3-and-c8", vid:"50299985887547"},
+ {k:"none", n:"No thanks", d:"No clip on this light.", h:null, vid:null}
+];
 var CONSENT="I understand that this item is non-returnable/non-refundable. Please double check your order for accuracy before placing it.";
 function emGroupOf(v){for(var i=0;i<EM_GROUPS.length;i++){if(EM_GROUPS[i].items.indexOf(v)>-1)return EM_GROUPS[i]}return null}
 function isIR(v){return !!v&&v.indexOf("IR ")===0}
@@ -104,7 +115,7 @@ function buildTag(){
 }
 
 /* ---------------- rule engine ---------------- */
-var S={host:null,em:null,refl:null,optic:null,beamOK:false,ack:false,sw:null,led:null,btn:null,nick:''};
+var S={host:null,em:null,refl:null,optic:null,beamOK:false,clip:null,ack:false,sw:null,led:null,btn:null,nick:''};
 function money(n){return "$"+n.toFixed(2)}
 function purl(h){return P+h}
 function canonCount(v){var s={},k;HOSTS.forEach(function(h){if(h.v===v)s[h.canon||h.id]=1});
@@ -175,6 +186,7 @@ function lines(){
     if(S.em){
       pr={"Emitter":S.em,"Reflector":S.refl||"Default","Optic / Lens":S.optic||"Default (Glass)"};
       if(S.sw)pr["Install service"]="Yes - install the "+S.sw.n+" I am buying with this light";
+      else if(S.btn)pr["Install service"]="Yes - fit the "+S.btn[0]+" centre button I am buying with this light";
       if(S.ack)pr["Build acknowledgement"]="Accepted - non-returnable custom build";
     }
     L.push({role:"The light",n:"Convoy S2+ - "+S.host.n,p:S.host.p,vid:S.host.vid,h:S.host.h,sw:S.host.sw,
@@ -187,6 +199,9 @@ function lines(){
     else vid="50172242526523";
     L.push({role:"Tail switch for this light",n:S.sw.n+(S.led?" — "+S.led[0]:""),p:p,vid:vid,h:S.sw.h,sw:null,
             pend:(S.sw.cols.length&&!S.led)});
+  }
+  if(S.clip&&S.clip.vid){
+    L.push({role:"Pocket clip for this light",n:S.clip.n,p:0.99,vid:S.clip.vid,h:S.clip.h,sw:null});
   }
   if(S.btn){
     var fam=takesButton(),isBrass=S.btn[0]==="Brass";
@@ -215,13 +230,13 @@ function cartUrl(){
 function ready(){
   var L=lines(); if(!L.length)return false;
   for(var i=0;i<L.length;i++){ if(L[i].pend||!L[i].vid)return false }
-  if(S.host&&S.host.v==="full"&&!S.sw)return false;
+  if(S.host&&S.host.v==="full"&&!S.sw)return false;   /* full hosts must resolve the switch step */
   if(!S.em)return false;
   if(!S.refl)return false;
   if(!S.optic)return false;
   if(!S.beamOK)return false;
+  if(!S.clip)return false;   /* 'No thanks' counts as answered */
   if(!S.ack)return false;
-  if(S.host&&S.host.v==="unknown")return false;
   if(S.host&&S.host.oos)return false;
   return true;
 }
