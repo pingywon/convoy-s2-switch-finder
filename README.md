@@ -30,7 +30,8 @@ Other hard rules encoded here:
 | File | What it is |
 |---|---|
 | `index.html` | Standalone build — light **and** dark themes. Used for the Claude artifact and the LAN copy. |
-| `storefront-page.html` | Shopify page-body build — **dark only**, scoped to `#s2fit`, matched to the GC theme. Not interchangeable with `index.html`. |
+| `core.js` | **Shared data + rule engine** — hosts, switches, buttons, variant IDs, and the glow/cart logic. All three builds inline this. |
+| `app.js` | **Shared UI** — progressive steps that lock/dim, and the sticky cart bar. |
 | `data.js` | Source-of-truth data: hosts, verdicts, parts, prices, stock, product handles. |
 | `parts.json` | Original catalogue inventory scaffold. |
 | `storefront-v2-guided.html` | **Take 2 — Guided.** One question per screen, progress rail, 84px buttons at 22px type. Narrows 22 finishes to 3 material choices first. |
@@ -77,6 +78,28 @@ The published FAQ page **understates live inventory**:
 - Metal centre buttons: page says Silver/Black, store sells **12** finishes (11 @ $0.99 + brass @ $1.99).
 
 `data.js` is built from the live catalogue, so it is correct; the old page is not.
+
+## Button & glow rules (the part that is easy to get wrong)
+
+- **Any metal button** can be replaced with `convoy-black-button-for-metal-illuminated-switch`.
+- **Pressure-fit hosts are NOT a dead end** — the whole switch will not come out, but the **centre
+  button still swaps**. Earlier versions of this guide wrongly treated them as unfixable.
+- **Double Clear** = clear outer ring **and** clear centre. It needs a host that takes the *full*
+  switch **plus** the metal illuminated switch **plus** the `Clear Plastic` button. Bought together
+  with the light, that is the lit-up Double Clear.
+- **Any other centre button** (silver, black, or any colour) blocks the middle → **edge glow only**.
+- Rubber illuminated is one moulded piece — no separate centre button, full-face glow.
+- Forward clicky never lights.
+
+Encoded in `core.js` as `takesButton()`, `canDoubleClear()` and `glow()`; unit-tested across 7
+cases including pressure-fit, sold-out and undocumented hosts.
+
+## Add to cart
+
+Builds a Shopify cart permalink — `/cart/<variantId>:1,<variantId>:1,…` — so one button loads the
+whole build. That is why `core.js` carries variant IDs, not just product handles. The button stays
+disabled until `ready()` passes (nothing pending, nothing sold out, host documented). No running
+total is shown; the cart page is authoritative.
 
 ## Scope
 
