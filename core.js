@@ -139,33 +139,33 @@ function isClear(name){ return name==="Clear Plastic" }
 function glow(){
   if(!S.host)return null;
   if(S.host.v==="center"){
-    return {k:"edge",t:"Edge glow only",
-      d:"Your switch is pressed in at the factory, so the outer ring stays as it is. A new centre "+
-        "button changes the look, but the light still comes from around the edge."};
+    return {k:"ring",t:"Outer ring glows",
+      d:"Your outer ring is pressed in at the factory and stays as it is, so the light comes from "+
+        "around the edge. A new centre button changes the look. The clear outer ring is not an "+
+        "option on this finish &mdash; it only comes as part of the metal lit switch, which this "+
+        "light cannot take."};
   }
   if(!S.sw)return null;
   if(!S.sw.lit)return {k:"none",t:"No light",d:"The forward clicky is not illuminated. Nothing on the tail will glow."};
   if(S.sw.id==="rubber"){
     var rg=S.btn?rubberGlow(S.btn[0]):null;
-    if(rg==="none")return {k:"none",t:"No glow",
-      d:"That rubber button is opaque — it does not glow. Pick translucent or another colour if you "+
-        "want to be able to find the light in the dark."};
-    if(rg==="most")return {k:"double",t:"Brightest glow",
+    if(rg==="none")return {k:"warn",t:"No glow",
+      d:"That rubber button is opaque &mdash; it does not glow. Pick translucent or another colour if "+
+        "you want to be able to find the light in the dark."};
+    if(rg==="most")return {k:"ok",t:"Brightest glow",
       d:"Translucent rubber passes the most light of any button. The easiest option to spot in a dark room."};
-    if(rg==="some")return {k:"face",t:"Full face glow",
-      d:"A coloured rubber button glows across its whole face, tinted to match. Darker colours pass "+
-        "less light than translucent."};
-    return {k:"face",t:"Full face glow",
-      d:"Rubber diffuses the LED across the whole button — more light than the metal switch."};
+    return {k:"ok",t:"Full face glow",
+      d:"Rubber diffuses the LED across the whole button, tinted to match. Darker colours pass less light."};
   }
   if(!S.btn)return {k:"pick",t:"Pick a centre button",
-    d:"The metal switch needs a centre button. Clear Plastic gives you Double Clear; anything else glows at the edge only."};
-  if(isClear(S.btn[0]))return {k:"double",t:"DOUBLE CLEAR",
-    d:"Clear outer ring and clear centre button — both light up. Because you are buying the metal "+
-      "switch together with the light, this is the lit-up Double Clear."};
-  return {k:"edge",t:"Edge glow only",
-    d:"A "+S.btn[0]+" centre button blocks the middle, so you get glow around the edge — exactly like "+
-      "the silver or black buttons."};
+    d:"The metal lit switch brings a clear outer ring with it. Pair it with a clear centre for Double "+
+      "Clear, or with any other colour to keep the glow at the edge."};
+  if(isClear(S.btn[0]))return {k:"ok",t:"Double Clear",
+    d:"Clear outer ring plus clear centre &mdash; the whole tail lights, middle included."};
+  return {k:"ok",t:"Outer ring glows",
+    d:"The clear outer ring comes with the metal lit switch, and a "+S.btn[0]+" centre keeps the "+
+      "middle solid &mdash; so the glow sits in a ring around the button. This is the single outer "+
+      "clear look, and it is a normal way to run the light."};
 }
 /* Everything currently in the build, in cart order. */
 function lines(){

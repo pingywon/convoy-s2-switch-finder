@@ -176,6 +176,22 @@
  border-left:4px solid var(--ok);font-size:16px;color:var(--ink)}
 #s2b .buildtag b{color:var(--ok)}
 #s2b .buildtag span{display:block;font-size:14.5px;color:var(--ink3);margin-top:5px;line-height:1.45}
+
+/* Outcome readouts are neutral by default — "outer ring glows" is a normal
+   choice, not a warning. Only genuine surprises (an opaque button) stay amber. */
+#s2b .glow-ok{border-color:var(--okl);background:var(--okb)}
+#s2b .glow-ok .gt{color:var(--ok)}
+#s2b .glow-ring{border-color:var(--ln);background:var(--sf2)}
+#s2b .glow-ring .gt{color:var(--ink)}
+#s2b .glow-warn{border-color:var(--wnl);background:var(--wnb)}
+#s2b .glow-warn .gt{color:var(--wn)}
+#s2b .glow-none .gt,#s2b .glow-pick .gt{color:var(--ink2)}
+#s2b .glow-none,#s2b .glow-pick{border-color:var(--ln);background:var(--sf2)}
+#s2b .msg-plain{background:var(--sf2);border-color:var(--ln);color:var(--ink)}
+#s2b .msg-plain b{color:var(--ink)}
+#s2b .tagplain{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+ padding:3px 8px;border-radius:4px;border:1px solid var(--ln);background:var(--sf2);
+ color:var(--ink3);white-space:nowrap}
 </style>
 <div id="s2b">
 <div class="hero"><div class="kick" style="font-family:var(--mono);font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--ok);margin-bottom:12px">// Convoy S2+ · Switch &amp; button builder</div><h2 style="font-size:clamp(30px,5.2vw,46px);line-height:1.05;letter-spacing:-.03em;font-weight:800;margin:0 0 14px">Build your S2+ tail switch, step by step</h2><p style="font-size:19px;color:var(--ink2);max-width:62ch;margin:0 0 28px">One page, four questions. Each step unlocks as you answer the one above it &mdash; anything that will not fit your light stays dimmed.</p></div>
@@ -324,33 +340,33 @@ function isClear(name){ return name==="Clear Plastic" }
 function glow(){
   if(!S.host)return null;
   if(S.host.v==="center"){
-    return {k:"edge",t:"Edge glow only",
-      d:"Your switch is pressed in at the factory, so the outer ring stays as it is. A new centre "+
-        "button changes the look, but the light still comes from around the edge."};
+    return {k:"ring",t:"Outer ring glows",
+      d:"Your outer ring is pressed in at the factory and stays as it is, so the light comes from "+
+        "around the edge. A new centre button changes the look. The clear outer ring is not an "+
+        "option on this finish &mdash; it only comes as part of the metal lit switch, which this "+
+        "light cannot take."};
   }
   if(!S.sw)return null;
   if(!S.sw.lit)return {k:"none",t:"No light",d:"The forward clicky is not illuminated. Nothing on the tail will glow."};
   if(S.sw.id==="rubber"){
     var rg=S.btn?rubberGlow(S.btn[0]):null;
-    if(rg==="none")return {k:"none",t:"No glow",
-      d:"That rubber button is opaque — it does not glow. Pick translucent or another colour if you "+
-        "want to be able to find the light in the dark."};
-    if(rg==="most")return {k:"double",t:"Brightest glow",
+    if(rg==="none")return {k:"warn",t:"No glow",
+      d:"That rubber button is opaque &mdash; it does not glow. Pick translucent or another colour if "+
+        "you want to be able to find the light in the dark."};
+    if(rg==="most")return {k:"ok",t:"Brightest glow",
       d:"Translucent rubber passes the most light of any button. The easiest option to spot in a dark room."};
-    if(rg==="some")return {k:"face",t:"Full face glow",
-      d:"A coloured rubber button glows across its whole face, tinted to match. Darker colours pass "+
-        "less light than translucent."};
-    return {k:"face",t:"Full face glow",
-      d:"Rubber diffuses the LED across the whole button — more light than the metal switch."};
+    return {k:"ok",t:"Full face glow",
+      d:"Rubber diffuses the LED across the whole button, tinted to match. Darker colours pass less light."};
   }
   if(!S.btn)return {k:"pick",t:"Pick a centre button",
-    d:"The metal switch needs a centre button. Clear Plastic gives you Double Clear; anything else glows at the edge only."};
-  if(isClear(S.btn[0]))return {k:"double",t:"DOUBLE CLEAR",
-    d:"Clear outer ring and clear centre button — both light up. Because you are buying the metal "+
-      "switch together with the light, this is the lit-up Double Clear."};
-  return {k:"edge",t:"Edge glow only",
-    d:"A "+S.btn[0]+" centre button blocks the middle, so you get glow around the edge — exactly like "+
-      "the silver or black buttons."};
+    d:"The metal lit switch brings a clear outer ring with it. Pair it with a clear centre for Double "+
+      "Clear, or with any other colour to keep the glow at the edge."};
+  if(isClear(S.btn[0]))return {k:"ok",t:"Double Clear",
+    d:"Clear outer ring plus clear centre &mdash; the whole tail lights, middle included."};
+  return {k:"ok",t:"Outer ring glows",
+    d:"The clear outer ring comes with the metal lit switch, and a "+S.btn[0]+" centre keeps the "+
+      "middle solid &mdash; so the glow sits in a ring around the button. This is the single outer "+
+      "clear look, and it is a normal way to run the light."};
 }
 /* Everything currently in the build, in cart order. */
 function lines(){
@@ -586,16 +602,18 @@ function render(){
          g==='none'?'<span class="star star-off">No glow</span>':'')}).join('')+'</div>';
   }else{
     var dc=canDoubleClear();
-    s4inner=(dc?'<div class="msg msg-dc"><div><b>Double Clear is available on this build.</b>'+
-      '<p>Pick <b>Clear Plastic</b> and you get a clear outer ring <i>and</i> a clear centre &mdash; both light up. '+
-      'Any other colour blocks the middle and glows at the edge only, exactly like silver or black.</p></div></div>'
-      :'<div class="msg msg-warn">'+ICO.warn+'<div><b>Centre button only.</b>'+
-      '<p>The factory ring stays put on this finish, so you get glow around the edge whichever colour you pick. '+
-      'Double Clear needs a finish that takes the whole switch.</p></div></div>')+
+    s4inner=(dc?'<div class="msg msg-plain"><div><b>Two looks, both normal.</b>'+
+      '<p>The metal lit switch brings a <b>clear outer ring</b> with it. Pair it with the '+
+      '<b>Clear Plastic</b> centre and the middle lights too &mdash; that is Double Clear. Any other '+
+      'colour keeps the centre solid so the glow sits in a ring around it. Pick whichever you prefer.</p></div></div>'
+      :'<div class="msg msg-plain"><div><b>Centre button only on this finish.</b>'+
+      '<p>Your outer ring is pressed in at the factory and stays put, so the glow sits around the edge '+
+      'whichever colour you choose. The clear outer ring only comes as part of the metal lit switch, '+
+      'which this light cannot take.</p></div></div>')+
      '<div class="pgrid pgrid-s">'+BTN.cols.map(function(c){
        var isC=c[3]&&dc;
-       return optBtn('opt'+(isC?' opt-star':''),c[0],c[1],(S.btn&&S.btn[0]===c[0]),
-         'data-btn="'+c[0]+'"',isC?'<span class="star">Double Clear</span>':'')}).join('')+
+       return optBtn('opt',c[0],c[1],(S.btn&&S.btn[0]===c[0]),
+         'data-btn="'+c[0]+'"',isC?'<span class="tagplain">lights the centre too</span>':'')}).join('')+
        optBtn('opt',BRASSBTN.n,BRASSBTN.sw,(S.btn&&S.btn[0]==='Brass'),'data-btn="Brass"','')+'</div>';
   }
   out+=step(6,s4title,s4state,s4note,s4inner);

@@ -174,16 +174,18 @@ function render(){
          g==='none'?'<span class="star star-off">No glow</span>':'')}).join('')+'</div>';
   }else{
     var dc=canDoubleClear();
-    s4inner=(dc?'<div class="msg msg-dc"><div><b>Double Clear is available on this build.</b>'+
-      '<p>Pick <b>Clear Plastic</b> and you get a clear outer ring <i>and</i> a clear centre &mdash; both light up. '+
-      'Any other colour blocks the middle and glows at the edge only, exactly like silver or black.</p></div></div>'
-      :'<div class="msg msg-warn">'+ICO.warn+'<div><b>Centre button only.</b>'+
-      '<p>The factory ring stays put on this finish, so you get glow around the edge whichever colour you pick. '+
-      'Double Clear needs a finish that takes the whole switch.</p></div></div>')+
+    s4inner=(dc?'<div class="msg msg-plain"><div><b>Two looks, both normal.</b>'+
+      '<p>The metal lit switch brings a <b>clear outer ring</b> with it. Pair it with the '+
+      '<b>Clear Plastic</b> centre and the middle lights too &mdash; that is Double Clear. Any other '+
+      'colour keeps the centre solid so the glow sits in a ring around it. Pick whichever you prefer.</p></div></div>'
+      :'<div class="msg msg-plain"><div><b>Centre button only on this finish.</b>'+
+      '<p>Your outer ring is pressed in at the factory and stays put, so the glow sits around the edge '+
+      'whichever colour you choose. The clear outer ring only comes as part of the metal lit switch, '+
+      'which this light cannot take.</p></div></div>')+
      '<div class="pgrid pgrid-s">'+BTN.cols.map(function(c){
        var isC=c[3]&&dc;
-       return optBtn('opt'+(isC?' opt-star':''),c[0],c[1],(S.btn&&S.btn[0]===c[0]),
-         'data-btn="'+c[0]+'"',isC?'<span class="star">Double Clear</span>':'')}).join('')+
+       return optBtn('opt',c[0],c[1],(S.btn&&S.btn[0]===c[0]),
+         'data-btn="'+c[0]+'"',isC?'<span class="tagplain">lights the centre too</span>':'')}).join('')+
        optBtn('opt',BRASSBTN.n,BRASSBTN.sw,(S.btn&&S.btn[0]==='Brass'),'data-btn="Brass"','')+'</div>';
   }
   out+=step(6,s4title,s4state,s4note,s4inner);
