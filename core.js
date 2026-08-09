@@ -114,7 +114,7 @@ function buildTag(){
 }
 
 /* ---------------- rule engine ---------------- */
-var S={host:null,em:null,refl:null,optic:null,beamOK:false,clip:null,ack:false,sw:null,led:null,btn:null,nick:''};
+var S={host:null,em:null,refl:null,optic:null,beamOK:false,clip:null,presslit:false,ack:false,sw:null,led:null,btn:null,nick:''};
 function money(n){return "$"+n.toFixed(2)}
 function purl(h){return P+h}
 function canonCount(v){var s={},k;HOSTS.forEach(function(h){if(h.v===v)s[h.canon||h.id]=1});
@@ -143,11 +143,21 @@ function rubberGlow(n){
   return "some";
 }
 function canDoubleClear(){ return !!(S.host&&S.host.v==="full"&&S.sw&&S.sw.takesButton) }
+/* A pressure-fit light cannot swap its ring, but it CAN take the metal lit switch
+   together with a clear centre button — bought as a pair — to get centre glow. */
+function pressLitPair(){
+  return !!(S.host&&S.host.v==="center"&&S.presslit);
+}
 function isClear(name){ return name==="Clear Plastic" }
 /* What the customer will actually SEE lit up. */
 function glow(){
   if(!S.host)return null;
   if(S.host.v==="center"){
+    if(pressLitPair()){
+      return {k:"ok",t:"Centre glows",
+        d:"The metal lit switch and the clear centre button go in together as a pair, so the middle "+
+          "of your tail lights up. The factory outer ring stays as it is."};
+    }
     return {k:"ring",t:"Outer ring glows",
       d:"Your outer ring is pressed in at the factory and stays as it is, so the light comes from "+
         "around the edge. A new centre button changes the look. The clear outer ring is not an "+
@@ -181,7 +191,7 @@ function lines(){
   var L=[],BT=buildTag();
   if(S.host){
     var pr={};
-    if(BT)pr["Build"]=BT;
+    if(BT)pr["Build name"]=BT;
     if(S.em){
       pr["Emitter"]=S.em;
       pr["Reflector"]=S.refl||"Default";
@@ -195,6 +205,11 @@ function lines(){
     L.push({role:"The light",n:"Convoy S2+ - "+S.host.n,p:S.host.p,vid:S.host.vid,h:S.host.h,
             sw:S.host.sw,oos:!!S.host.oos,props:pr,
             sub:S.em?(S.em+" · "+(S.refl||"Default")+" · "+(S.optic||"Default (Glass)")):null});
+  }
+  if(pressLitPair()&&S.sw){
+    var pv=S.led?S.led[2]:null;
+    L.push({role:"Tail switch",n:S.sw.n+(S.led?" — "+S.led[0]:""),p:S.led?S.led[3]:S.sw.p,vid:pv,
+            h:S.sw.h,sw:null,pend:!S.led});
   }
   if(S.host&&S.host.v==="full"&&S.sw){
     var p=S.sw.p,vid=null;
@@ -222,9 +237,9 @@ function cartItems(){
   var tag=buildTag();
   return lines().filter(function(l){return l.vid&&!l.oos}).map(function(l){
     var p=l.props?JSON.parse(JSON.stringify(l.props)):{};
-    if(l.role!=="The light"){                    /* accessory lines stay short and plain */
-      if(tag)p["Build"]=tag;
-      var gw=goesWith(); if(gw)p["Goes with"]=gw;
+    if(l.role!=="The light"){                    /* accessory lines: one relationship line, one part */
+      var gw=goesWith();
+      p["For"]=(tag?tag+" — ":"")+(gw||"this build");
       if(l.role)p["Part"]=l.role;
     }
     var o={id:Number(l.vid),quantity:1};

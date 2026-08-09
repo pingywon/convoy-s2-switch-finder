@@ -120,9 +120,18 @@ function render(){
   if(!h){ s2inner='<p class="lede">Choose your light above and this unlocks.</p>' }
   else if(!S.em||!S.refl||!S.optic){ s2inner='<p class="lede">Pick your emitter and beam first.</p>' }
   else if(h.v==='center'){
-    s2inner='<div class="msg msg-warn">'+ICO.warn+'<div><b>The '+h.n+' switch does not come out.</b>'+
-     '<p>It is pressed into the tail cap at the factory. You cannot fit a different switch — but you '+
-     '<b>can</b> still change the centre button in step 4.</p></div></div>';
+    s2inner='<div class="msg msg-plain"><div><b>The '+h.n+' outer ring does not come out.</b>'+
+     '<p>It is pressed into the tail cap at the factory, so you cannot fit a different ring. You '+
+     '<b>can</b> still change the centre button below.</p></div></div>'+
+     '<button class="pick swc pairopt" type="button" id="presslit" aria-pressed="'+S.presslit+'">'+
+       '<span class="tailviz '+(S.presslit?'tv-both':'tv-off')+'" aria-hidden="true">'+
+       '<span class="tv-halo"></span><span class="tv-btn"></span></span>'+
+       '<span class="swn">Add centre glow</span>'+
+       '<span class="swt lit">Metal lit switch + clear centre</span>'+
+       '<span class="swd">Your ring stays as it is, but the metal lit switch and a clear centre '+
+       'button go in together and light the middle of the tail. They only work as a pair, so we '+
+       'add both.</span>'+
+       '<span class="swa">'+(S.presslit?'Added — pick a colour below':'Optional')+'</span></button>';
   }else if(h.v==='unknown'){
     s2inner='<div class="msg msg-warn">'+ICO.warn+'<div><b>We have not verified the '+h.n+'.</b>'+
      '<p>It appears on neither compatibility list. Message us before buying a switch and we will open one.</p></div></div>';
@@ -144,7 +153,7 @@ function render(){
   out+=step(4,'Pick your switch',s2state,s2note,s2inner);
 
   /* ---- 3. LED colour ---- */
-  var needLed = !!(h&&h.v==='full'&&S.sw&&S.sw.cols.length);
+  var needLed = !!(S.sw&&S.sw.cols.length&&(h&&(h.v==='full'||pressLitPair())));
   var s3state = needLed?(S.led?'done':'active'):'lock';
   var s3note = needLed?(S.led?S.led[0]:'Choose a colour'):(S.sw&&!S.sw.lit?'Forward clicky has no LED':'Pick a switch first');
   var s3inner = needLed
@@ -247,7 +256,7 @@ function render(){
     'switch and button belong to which. Really useful if you are ordering more than one custom light.</p>'+
     '<input type="text" id="nick" maxlength="40" placeholder="e.g. Dad&apos;s light" value="'+
     String(S.nick||'').replace(/"/g,'&quot;')+'">'+
-    (S.host?'<div class="buildtag"><b>Tagged as:</b> '+e_(buildTag()||'—')+'</div>':'')+'</div>';
+    '</div>';
   R.innerHTML=intro+'<div class="steps">'+out+'</div>'+
     '<div class="bar'+(L.length?' on':'')+'"><div class="barin"><div class="bartxt">'+
     (rdy?'<b>'+L.length+' item'+(L.length>1?'s':'')+' ready</b><span>Total shown at checkout</span>'
@@ -270,7 +279,7 @@ function wire(){
   R.querySelectorAll('[data-h]').forEach(function(b){b.addEventListener('click',function(){
     var n=HOSTS.filter(function(x){return x.id===b.dataset.h})[0];
     S.host=(S.host&&S.host.id===n.id)?null:n;
-    S.em=null;S.refl=null;S.optic=null;S.beamOK=false;S.clip=null;S.ack=false;S.sw=null;S.led=null;S.btn=null;
+    S.em=null;S.refl=null;S.optic=null;S.beamOK=false;S.clip=null;S.presslit=false;S.ack=false;S.sw=null;S.led=null;S.btn=null;
     render(); if(S.host)goTo(stepEl(2))})});
   R.querySelectorAll('[data-em]').forEach(function(b){b.addEventListener('click',function(){
     var v=b.dataset.em;
@@ -283,13 +292,18 @@ function wire(){
     S.optic=b.dataset.optic; render()})});
   var mo=document.getElementById('moreoptics');
   if(mo)mo.addEventListener('click',function(){S.showOptics=!S.showOptics;render();goTo(stepEl(3))});
+  var pl=document.getElementById('presslit');
+  if(pl)pl.addEventListener('click',function(){
+    S.presslit=!S.presslit;
+    if(S.presslit){ S.sw=SWITCHES.filter(function(s){return s.id==='metal'})[0];
+                    S.btn=BTN.cols.filter(function(c){return c[0]==='Clear Plastic'})[0]; }
+    else { S.sw=null;S.led=null;S.btn=null; }
+    render(); goTo(stepEl(S.presslit?5:4))});
   R.querySelectorAll('[data-clip]').forEach(function(b){b.addEventListener('click',function(){
     var cl=CLIPS.filter(function(x){return x.k===b.dataset.clip})[0];
     S.clip=(S.clip&&S.clip.k===cl.k)?null:cl; render(); if(S.clip)goTo(stepEl(8))})});
   var nk=document.getElementById('nick');
-  if(nk)nk.addEventListener('input',function(){S.nick=nk.value;
-    var t=R.querySelector('.buildtag');if(t)t.innerHTML='<b>Tagged as:</b> '+e_(buildTag()||'—')+
-      '<span>Every part above carries this tag, so we know which switch and button belong to which light.</span>'});
+  if(nk)nk.addEventListener('input',function(){S.nick=nk.value});
   var ak=document.getElementById('ack');
   if(ak)ak.addEventListener('change',function(){S.ack=ak.checked;render()});
   R.querySelectorAll('[data-sw]').forEach(function(b){b.addEventListener('click',function(){
