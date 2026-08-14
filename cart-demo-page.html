@@ -1,0 +1,82 @@
+<style>
+#s2demo{--bg:#070d13;--sf:#0d151d;--ln:#24343f;--ink:#f3f7fa;--ink2:#adbecb;--ok:#00ff9f;
+ --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+ color:var(--ink);font-size:18px;line-height:1.55;display:block;text-align:left;padding-bottom:40px}
+#s2demo *{box-sizing:border-box}
+@media(min-width:1000px){#s2demo{width:min(900px,94vw);margin-left:calc(50% - min(450px,47vw))}}
+#s2demo h2{font-size:clamp(28px,4.6vw,42px);line-height:1.06;letter-spacing:-.02em;font-weight:800;margin:0 0 12px}
+#s2demo p{margin:0 0 14px;color:var(--ink2)}
+#s2demo .kick{font-family:var(--mono);font-size:13px;letter-spacing:.2em;text-transform:uppercase;
+ color:var(--ok);margin-bottom:12px}
+#s2demo .box{background:var(--sf);border:2px solid var(--ln);border-radius:10px;padding:22px;margin-top:18px}
+#s2demo ul{margin:10px 0 0;padding-left:20px;color:var(--ink2);font-size:16px}
+#s2demo li{margin-bottom:6px}
+#s2demo .status{font-family:var(--mono);font-size:16px;color:var(--ok);margin-top:16px;min-height:24px}
+#s2demo .btn{font:inherit;font-size:19px;font-weight:800;padding:16px 30px;border-radius:8px;border:none;
+ background:var(--ok);color:#070d13;cursor:pointer;margin-top:16px}
+#s2demo .btn:disabled{background:var(--ln);color:var(--ink2);cursor:not-allowed}
+#s2demo .warn{font-size:15px;color:var(--ink2);margin-top:14px;border-top:1px solid var(--ln);padding-top:14px}
+</style>
+<div id="s2demo">
+  <div class="kick">// S2+ builder · cart preview loader</div>
+  <h2>Load a demo cart</h2>
+  <p>This clears your cart, drops in two complete custom builds plus one ordinary product,
+     then sends you to the cart so you can see how a build is grouped.</p>
+  <div class="box">
+    <strong>What gets added</strong>
+    <ul>
+      <li><b>“Dad’s light”</b> — Black S2+ (519a 4500K) + metal illuminated switch (Red)
+          + clear centre button + screw-on pocket clip</li>
+      <li><b>“Work light”</b> — Brass S2+ (SFT40 6500K) + rubber illuminated switch (Blue)
+          + translucent rubber tail button</li>
+      <li>One <b>MAO S2+</b> on its own, to show a normal product beside the builds</li>
+    </ul>
+    <button class="btn" id="go" type="button">Load the demo cart &rarr;</button>
+    <div class="status" id="st"></div>
+    <p class="warn">This only touches your own cart. Nothing is ordered, and no product,
+       page or theme is changed. Empty your cart any time to undo it.</p>
+  </div>
+</div>
+<script>
+var PREVIEW = "183794598203";
+var ITEMS = [
+  {id:51141102076219,quantity:1,properties:{
+    "Emitter":"519a - 4500K","Reflector":"OP - Orange Peel (More Spill)","Optic / lens":"Default (Glass)",
+    "Please fit":"Metal Illuminated (Red) + Clear Plastic button",
+    "Agreed":"Non-returnable custom build",
+    "_gc_build":"Dad's light","_gc_light":"Black S2+ (519a - 4500K)","_gc_role":"The light"}},
+  {id:45259754471739,quantity:1,properties:{"Part":"Tail switch",
+    "_gc_build":"Dad's light","_gc_light":"Black S2+ (519a - 4500K)","_gc_role":"Tail switch"}},
+  {id:50903798841659,quantity:1,properties:{"Part":"Centre button",
+    "_gc_build":"Dad's light","_gc_light":"Black S2+ (519a - 4500K)","_gc_role":"Centre button"}},
+  {id:50299985953083,quantity:1,properties:{"Part":"Pocket clip",
+    "_gc_build":"Dad's light","_gc_light":"Black S2+ (519a - 4500K)","_gc_role":"Pocket clip"}},
+  {id:49958612173115,quantity:1,properties:{
+    "Emitter":"SFT40 - 6500K","Reflector":"SMO - Smooth (More Throw)","Optic / lens":"Default (Glass)",
+    "Please fit":"Rubber Illuminated (Blue)","Agreed":"Non-returnable custom build",
+    "_gc_build":"Work light","_gc_light":"Brass S2+ (SFT40 - 6500K)","_gc_role":"The light"}},
+  {id:47828135969083,quantity:1,properties:{"Part":"Tail switch",
+    "_gc_build":"Work light","_gc_light":"Brass S2+ (SFT40 - 6500K)","_gc_role":"Tail switch"}},
+  {id:50300036809019,quantity:1,properties:{"Part":"Rubber tail button",
+    "_gc_build":"Work light","_gc_light":"Brass S2+ (SFT40 - 6500K)","_gc_role":"Rubber tail button"}},
+  {id:47828408631611,quantity:1}
+];
+var btn=document.getElementById('go'), st=document.getElementById('st');
+function say(m){st.textContent=m}
+function load(){
+  btn.disabled=true; say('Clearing your cart…');
+  fetch('/cart/clear.js',{method:'POST',headers:{'Content-Type':'application/json'}})
+    .then(function(){ say('Adding 8 lines…');
+      return fetch('/cart/add.js',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({items:ITEMS})}); })
+    .then(function(r){ if(!r.ok) return r.text().then(function(t){throw new Error(t)});
+      say('Done — opening the cart…');
+      var m=/[?&]preview_theme_id=(\d+)/.exec(window.location.search);
+      window.location = m ? ('/cart?preview_theme_id='+m[1]) : '/cart'; })
+    .catch(function(e){ btn.disabled=false;
+      say('Could not load: '+(e&&e.message?String(e.message).slice(0,140):'unknown error')); });
+}
+btn.addEventListener('click',load);
+/* ?auto=1 loads without a click — handy for a one-tap link */
+if(/[?&]auto=1/.test(window.location.search)) load();
+</script>

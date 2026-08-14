@@ -1,0 +1,322 @@
+{%- comment -%}
+  GAD-948 (v2 live) — checkout friction + cyberpunk alignment.
+  Changes vs. original (preserved CHECKOUT button color per board direction):
+  - Free-shipping progress line above totals
+  - <shopify-accelerated-checkout-cart> wallet block (Shop Pay / Apple Pay / Google Pay / PayPal / Venmo)
+  - Trust line under CHECKOUT button (secure-checkout / 14-day defective / contact@)
+  - Cart line + totals panel tweaked to match the cyberpunk mailer palette (phosphor accents)
+{%- endcomment -%}
+
+{%- assign free_ship_cents = 10000 -%}{%- comment -%} $100 threshold {%- endcomment -%}
+{%- assign remaining_cents = free_ship_cents | minus: cart.total_price -%}
+{%- if remaining_cents < 0 -%}{%- assign remaining_cents = 0 -%}{%- endif -%}
+{%- assign progress_pct = cart.total_price | times: 100 | divided_by: free_ship_cents -%}
+{%- if progress_pct > 100 -%}{%- assign progress_pct = 100 -%}{%- endif -%}
+
+<style>
+  #section-{{ section.id }} {
+    padding-top: {{ section.settings.padding_top | default: 40 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | default: 40 }}px;
+    {% if section.settings.background_style == 'panel' %}
+      background: rgba(255, 255, 255, 0.04);
+    {% elsif section.settings.background_style == 'muted' %}
+      background: rgba(0, 0, 0, 0.2);
+    {% endif %}
+  }
+  #section-{{ section.id }} .gc-page__title {
+    color: {{ section.settings.heading_color | default: '#ffffff' }};
+  }
+  #section-{{ section.id }} .gc-page__tag,
+  #section-{{ section.id }} .gc-cart__subtotal-label,
+  #section-{{ section.id }} .gc-cart__taxes {
+    color: {{ section.settings.body_color | default: '#d4d6db' }};
+  }
+
+  /* GAD-948 v2: hidden Enter-submit fallback (replaces visible UPDATE button) */
+  .gc-cart__update-hidden {
+    position: absolute; left: -9999px; width: 1px; height: 1px;
+    opacity: 0; pointer-events: none; border: 0; padding: 0; margin: 0;
+  }
+
+  /* GAD-948: cyberpunk-aligned cart container */
+  #section-{{ section.id }} .gc-cart__lines {
+    border-top: 1px solid rgba(0, 255, 159, 0.18);
+    border-bottom: 1px solid rgba(0, 255, 159, 0.18);
+  }
+  #section-{{ section.id }} .gc-cart__line {
+    border-bottom: 1px dashed rgba(0, 255, 159, 0.10);
+  }
+  #section-{{ section.id }} .gc-cart__line:last-child { border-bottom: 0; }
+  #section-{{ section.id }} .gc-cart__line-remove {
+    color: var(--gc-warn, #ff2d6f) !important;
+    text-shadow: 0 0 6px rgba(255, 45, 111, 0.35);
+  }
+  #section-{{ section.id }} .gc-cart__totals {
+    background: rgba(0, 255, 159, 0.03);
+    border: 1px solid rgba(0, 255, 159, 0.18);
+    padding: 18px;
+    margin-top: 14px;
+  }
+  #section-{{ section.id }} .gc-cart__subtotal-value {
+    color: var(--gc-phosphor, #00ff9f);
+    text-shadow: 0 0 6px rgba(0, 255, 159, 0.35);
+  }
+
+  /* GAD-948: free-shipping progress */
+  .gc-cart__ship {
+    margin: 6px 0 14px;
+    font-family: var(--gc-ff-body, 'JetBrains Mono', ui-monospace, monospace);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--gc-fg, #c8d4d8);
+  }
+  .gc-cart__ship-bar {
+    margin-top: 6px;
+    height: 6px;
+    background: rgba(0, 255, 159, 0.10);
+    border: 1px solid rgba(0, 255, 159, 0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .gc-cart__ship-fill {
+    position: absolute; top: 0; left: 0; bottom: 0;
+    background: var(--gc-phosphor, #00ff9f);
+    box-shadow: 0 0 10px rgba(0, 255, 159, 0.55);
+    transition: width 0.4s ease;
+  }
+  .gc-cart__ship--unlocked .gc-cart__ship-fill { background: var(--gc-phosphor, #00ff9f); }
+
+  /* GAD-948: accelerated checkout block */
+  .gc-cart__wallets {
+    margin: 14px 0 10px;
+  }
+  .gc-cart__wallets shopify-accelerated-checkout-cart,
+  .gc-cart__wallets shopify-accelerated-checkout {
+    display: block;
+    --shopify-accelerated-checkout-button-block-size: 48px;
+    --shopify-accelerated-checkout-button-border-radius: 0px;
+    --shopify-accelerated-checkout-row-gap: 8px;
+    --shopify-accelerated-checkout-inline-alignment: stretch;
+  }
+  .gc-cart__or {
+    display: flex; align-items: center; gap: 10px;
+    margin: 8px 0;
+    font-family: var(--gc-ff-body, 'JetBrains Mono', ui-monospace, monospace);
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--gc-fg-dim, #5a6b73);
+  }
+  .gc-cart__or::before,
+  .gc-cart__or::after {
+    content: ""; flex: 1; height: 1px; background: rgba(0, 255, 159, 0.18);
+  }
+
+  /* GAD-948: trust line under CHECKOUT */
+  .gc-cart__trust {
+    margin-top: 12px;
+    text-align: center;
+    font-family: var(--gc-ff-body, 'JetBrains Mono', ui-monospace, monospace);
+    font-size: 11px;
+    letter-spacing: 0.10em;
+    color: var(--gc-fg-dim, #5a6b73);
+    line-height: 1.55;
+  }
+  .gc-cart__trust a {
+    color: var(--gc-phosphor, #00ff9f);
+    text-decoration: none;
+    border-bottom: 1px dotted rgba(0, 255, 159, 0.45);
+  }
+  .gc-cart__trust-row { display: block; }
+</style>
+<div id="section-{{ section.id }}" class="gc-cart">
+  <header class="gc-page__head">
+    <div class="gc-page__tag">// CART</div>
+    <h1 class="gc-page__title">{%- if cart.item_count > 0 -%}&gt; PACKET DELIVERED — CART += {{ cart.item_count }}{%- else -%}{{ 'general.cart.title' | t }}{%- endif -%}</h1>
+  </header>
+
+  {%- if cart.item_count > 0 -%}
+    {%- form 'cart', cart -%}
+      {%- comment -%} GAD-948 v2: captures Enter-key submit so qty input keeps working after removing the visible UPDATE button. Must be the first submit in the form so Enter triggers it, not CHECKOUT. {%- endcomment -%}
+      <button type="submit" name="update" class="gc-cart__update-hidden" aria-hidden="true" tabindex="-1"></button>
+
+      <div class="gc-cart__lines">
+        {%- for item in cart.items -%}
+          <div class="gc-cart__line" data-cart-line="{{ item.key }}">
+            <a href="{{ item.url }}" class="gc-cart__line-img">
+              {%- if item.image -%}
+                <img src="{{ item.image | image_url: width: 200 }}" alt="{{ item.title | escape }}">
+              {%- endif -%}
+            </a>
+            <div class="gc-cart__line-info">
+              <h3 class="gc-cart__line-title"><a href="{{ item.url }}">{{ item.product.title }}</a></h3>
+              {%- unless item.product.has_only_default_variant -%}
+                <div class="gc-cart__line-variant">{{ item.variant.title }}</div>
+              {%- endunless -%}
+              {%- if item.selling_plan_allocation -%}
+                <div class="gc-cart__line-variant">{{ item.selling_plan_allocation.selling_plan.name }}</div>
+              {%- endif -%}
+              <a href="{{ item.url_to_remove }}" class="gc-cart__line-remove">{{ 'general.cart.remove' | t | upcase }}</a>
+            </div>
+            <div class="gc-cart__line-qty">
+              <a href="{{ item.url_to_remove }}" aria-label="Decrease quantity">{% if item.quantity > 1 %}&minus;{% else %}&times;{% endif %}</a>
+              <input type="number" name="updates[{{ item.key }}]" value="{{ item.quantity }}" min="0" aria-label="Quantity" onchange="this.form.submit()" onblur="if(this.value!=this.defaultValue)this.form.submit()">
+              <a href="{{ routes.cart_change_url }}?line={{ forloop.index }}&quantity={{ item.quantity | plus: 1 }}" aria-label="Increase quantity">+</a>
+            </div>
+            <div class="gc-cart__line-price">{{ item.final_line_price | money }}</div>
+          </div>
+        {%- endfor -%}
+      </div>
+
+      <div class="gc-cart__foot">
+        <div class="gc-cart__note">
+          <label for="gc-cart-note">{{ 'general.cart.note' | t | upcase }}</label>
+          <textarea id="gc-cart-note" name="note">{{ cart.note }}</textarea>
+        </div>
+
+        <div class="gc-cart__totals">
+          {%- if remaining_cents > 0 -%}
+            <div class="gc-cart__ship">
+              <span>// {{ remaining_cents | money_without_trailing_zeros }} to free U.S. ground shipping</span>
+              <div class="gc-cart__ship-bar"><div class="gc-cart__ship-fill" style="width: {{ progress_pct }}%;"></div></div>
+            </div>
+          {%- else -%}
+            <div class="gc-cart__ship gc-cart__ship--unlocked">
+              <span>// FREE U.S. GROUND SHIPPING UNLOCKED</span>
+              <div class="gc-cart__ship-bar"><div class="gc-cart__ship-fill" style="width: 100%;"></div></div>
+            </div>
+          {%- endif -%}
+
+          <div class="gc-cart__subtotal">
+            <span class="gc-cart__subtotal-label">{{ 'general.cart.subtotal' | t }}</span>
+            <span class="gc-cart__subtotal-value">{{ cart.total_price | money }}</span>
+          </div>
+          <div class="gc-cart__taxes">{{ 'general.cart.taxes_and_shipping_at_checkout' | t }}</div>
+
+          <div class="gc-cart__wallets">
+            <shopify-accelerated-checkout-cart></shopify-accelerated-checkout-cart>
+          </div>
+          <div class="gc-cart__or">or pay manually</div>
+
+          <button type="submit" name="checkout" class="gc-btn gc-btn--warn gc-btn--full">&gt; {{ 'general.cart.checkout' | t | upcase }} _</button>
+
+          <div class="gc-cart__trust">
+            <span class="gc-cart__trust-row">// SSL SECURE CHECKOUT VIA SHOPIFY · 14-DAY DEFECTIVE RETURN</span>
+            <span class="gc-cart__trust-row">// QUESTIONS? <a href="mailto:contact@gadgetconnections.com">contact@gadgetconnections.com</a></span>
+          </div>
+        </div>
+      </div>
+
+    {%- endform -%}
+  {%- else -%}
+    <div class="gc-cart__empty">
+      <h2>:: buffer empty</h2>
+      <p>{{ 'general.cart.empty' | t }}</p>
+      <p style="margin-top:20px;">
+        <a href="{{ routes.all_products_collection_url }}" class="gc-btn">&gt; {{ 'general.cart.continue_shopping' | t | upcase }} _</a>
+      </p>
+    </div>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Cart",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow_text",
+      "label": "Eyebrow override"
+    },
+    {
+      "type": "richtext",
+      "id": "intro_text",
+      "label": "Intro copy",
+      "default": "<p></p>"
+    },
+    {
+      "type": "select",
+      "id": "background_style",
+      "label": "Background style",
+      "default": "none",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "panel",
+          "label": "Panel"
+        },
+        {
+          "value": "muted",
+          "label": "Muted"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_note",
+      "label": "Show order note",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_taxes_copy",
+      "label": "Show taxes/shipping note",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "body_color",
+      "label": "Body color",
+      "default": "#d4d6db"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    }
+  ],
+  "blocks": [],
+  "presets": [
+    {
+      "name": "Cart",
+      "category": "Shopify Defaults"
+    }
+  ]
+}
+{% endschema %}
