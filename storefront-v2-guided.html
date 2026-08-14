@@ -786,24 +786,7 @@ function render(){
   if(h&&h.v==='unknown')s2state='lock';
   out+=step(4,'Pick your switch',s2state,s2note,s2inner);
 
-  /* ---- 3. LED colour ---- */
-  var needLed = !!(S.sw&&S.sw.cols.length&&(h&&(h.v==='full'||pressLitPair())));
-  var s3state = needLed?(S.led?'done':'active'):'lock';
-  var s3note = needLed?(S.led?S.led[0]:'Choose a colour'):(S.sw&&!S.sw.lit?'Forward clicky has no LED':'Pick a switch first');
-  var s3inner = needLed
-    ? '<div class="msg msg-rule">'+ICO.warn+'<div><b>This glow is for finding the light in the dark.</b>'+
-      '<p>The lit tail is a locator, not a light source &mdash; it marks where the flashlight is on a '+
-      'bedside table or in a bag. It does not light the room. Some colours read brighter than others: '+
-      'white and translucent show most, deeper colours least.</p></div></div>'+
-      '<div class="pgrid pgrid-s">'+S.sw.cols.map(function(c){
-        return '<button class="pick opt ledopt" type="button" data-led="'+c[0]+'" aria-pressed="'+
-          (S.led&&S.led[0]===c[0])+'" style="--ledc:'+c[1]+'">'+
-          '<span class="leddot"></span><span class="pn">'+c[0]+'</span></button>'}).join('')+'</div>'
-    : '<p class="lede">'+(S.sw&&!S.sw.lit?'The forward clicky is not illuminated, so there is no LED colour to pick.'
-        :'Pick an illuminated switch above and the colours unlock.')+'</p>';
-  out+=step(5,'Pick the LED colour',s3state,s3note,s3inner);
-
-  /* ---- 4. button (metal centre, or coloured rubber tailcap) ---- */
+  /* ---- 5. button (metal centre, or coloured rubber tailcap) ---- */
   var fam=takesButton();
   var s4state = fam?(S.btn?'done':'active'):'lock';
   var s4title = fam==='rubber'?'Pick the rubber button':'Pick the centre button';
@@ -842,7 +825,24 @@ function render(){
            +' title="Clear lets the centre light up as well as the ring."':''),'')}).join('')+
        optBtn('opt',BRASSBTN.n,BRASSBTN.sw,(S.btn&&S.btn[0]==='Brass'),'data-btn="Brass"','')+'</div>';
   }
-  out+=step(6,s4title,s4state,s4note,s4inner);
+  out+=step(5,s4title,s4state,s4note,s4inner);
+
+  /* ---- 6. LED colour ---- */
+  var needLed = !!(S.sw&&S.sw.cols.length&&(h&&(h.v==='full'||pressLitPair())));
+  var s3state = needLed?(S.led?'done':'active'):'lock';
+  var s3note = needLed?(S.led?S.led[0]:'Choose a colour'):(S.sw&&!S.sw.lit?'Forward clicky has no LED':'Pick a switch first');
+  var s3inner = needLed
+    ? '<div class="msg msg-rule">'+ICO.warn+'<div><b>This glow is for finding the light in the dark.</b>'+
+      '<p>The lit tail is a locator, not a light source &mdash; it marks where the flashlight is on a '+
+      'bedside table or in a bag. It does not light the room. Some colours read brighter than others: '+
+      'white and translucent show most, deeper colours least.</p></div></div>'+
+      '<div class="pgrid pgrid-s">'+S.sw.cols.map(function(c){
+        return '<button class="pick opt ledopt" type="button" data-led="'+c[0]+'" aria-pressed="'+
+          (S.led&&S.led[0]===c[0])+'" style="--ledc:'+c[1]+'">'+
+          '<span class="leddot"></span><span class="pn">'+c[0]+'</span></button>'}).join('')+'</div>'
+    : '<p class="lede">'+(S.sw&&!S.sw.lit?'The forward clicky is not illuminated, so there is no LED colour to pick.'
+        :'Pick an illuminated switch above and the colours unlock.')+'</p>';
+  out+=step(6,'Pick the LED colour',s3state,s3note,s3inner);
 
   /* ---- pocket clip ---- */
   var c7state=!h?'lock':(S.clip?'done':'active');
@@ -932,7 +932,7 @@ function wire(){
     if(S.presslit){ S.sw=SWITCHES.filter(function(s){return s.id==='metal'})[0];
                     S.btn=BTN.cols.filter(function(c){return c[0]==='Clear Plastic'})[0]; }
     else { S.sw=null;S.led=null;S.btn=null; }
-    render(); goTo(stepEl(S.presslit?5:4))});
+    render(); goTo(stepEl(S.presslit?6:4))});
   R.querySelectorAll('[data-clip]').forEach(function(b){b.addEventListener('click',function(){
     var cl=CLIPS.filter(function(x){return x.k===b.dataset.clip})[0];
     S.clip=(S.clip&&S.clip.k===cl.k)?null:cl; render(); if(S.clip)goTo(stepEl(8))})});
@@ -946,12 +946,13 @@ function wire(){
     var nx=R.querySelector('.stp[data-s="active"]'); if(nx)nx.scrollIntoView({behavior:'smooth',block:'center'})})});
   R.querySelectorAll('[data-led]').forEach(function(b){b.addEventListener('click',function(){
     var c=S.sw.cols.filter(function(x){return x[0]===b.dataset.led})[0];
-    S.led=(S.led&&S.led[0]===c[0])?null:c; render(); if(S.led&&takesButton())goTo(stepEl(6))})});
+    S.led=(S.led&&S.led[0]===c[0])?null:c; render(); if(S.led)goTo(stepEl(7))})});
   R.querySelectorAll('[data-btn]').forEach(function(b){b.addEventListener('click',function(){
     var k=b.dataset.btn,c;
     if(k==='Brass')c=['Brass',BRASSBTN.sw,BRASSBTN.vid,false];
     else c=btnSet().cols.filter(function(x){return x[0]===k})[0];
-    S.btn=(S.btn&&S.btn[0]===c[0])?null:c; render()})});
+    S.btn=(S.btn&&S.btn[0]===c[0])?null:c; render();
+    if(S.btn)goTo(stepEl(S.sw&&S.sw.cols.length?6:7))})});
 }
 render();
 
