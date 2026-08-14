@@ -558,7 +558,6 @@ function lines(){
   var L=[],BT=buildTag();
   if(S.host){
     var pr={};
-    if(BT)pr["Build name"]=BT;
     if(S.em){
       pr["Emitter"]=S.em;
       pr["Reflector"]=S.refl||"Default";
@@ -601,22 +600,19 @@ function goesWith(){
   return S.host.n+" S2+"+(S.em?" ("+S.em+")":"");
 }
 function cartItems(){
-  var tag=buildTag();
+  var tag=buildTag(), gw=goesWith();
+  /* Properties beginning with "_" are hidden from the customer in cart/checkout but
+     stay visible on the order in admin. _gc_build is the grouping key the cart
+     template uses to draw one build as a single block. */
   return lines().filter(function(l){return l.vid&&!l.oos}).map(function(l){
     var p=l.props?JSON.parse(JSON.stringify(l.props)):{};
-    if(l.role!=="The light"){                    /* accessory lines: one relationship line, one part */
-      var gw=goesWith();
-      p["For"]=(tag?tag+" — ":"")+(gw||"this build");
-      if(l.role)p["Part"]=l.role;
-    }
+    p["_gc_build"]=tag||"Custom build";
+    p["_gc_light"]=gw||"";
+    p["_gc_role"]=l.role||"";
+    if(l.role!=="The light"&&l.role)p["Part"]=l.role;
     var o={id:Number(l.vid),quantity:1};
     if(Object.keys(p).length)o.properties=p;
     return o});
-}
-function cartUrl(){
-  if(!ready())return null;
-  var v=lines().filter(function(l){return l.vid&&!l.oos}).map(function(l){return l.vid+":1"});
-  return v.length?SHOP+"/cart/"+v.join(","):null;
 }
 /* Build is ready to buy when nothing is still pending a choice. */
 function ready(){

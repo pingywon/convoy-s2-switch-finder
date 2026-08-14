@@ -1,0 +1,57 @@
+{%- comment -%}
+  gc-cart-line — one cart line.
+  Renders custom-build spec properties. Keys starting with "_" are internal
+  (grouping only) and never shown. Quantity links use item.key, not
+  forloop.index, so grouping cannot mis-target a line.
+{%- endcomment -%}
+{%- assign role = item.properties['_gc_role'] -%}
+<div class="gc-cart__line{% if role != blank %} gc-cart__line--build{% endif %}" data-cart-line="{{ item.key }}">
+  <a href="{{ item.url }}" class="gc-cart__line-img">
+    {%- if item.image -%}
+      <img src="{{ item.image | image_url: width: 200 }}" alt="{{ item.title | escape }}">
+    {%- endif -%}
+  </a>
+  <div class="gc-cart__line-info">
+    {%- if role != blank and role != 'The light' -%}
+      <div class="gc-spec__role">{{ role }}</div>
+    {%- endif -%}
+    <h3 class="gc-cart__line-title"><a href="{{ item.url }}">{{ item.product.title }}</a></h3>
+    {%- unless item.product.has_only_default_variant -%}
+      <div class="gc-cart__line-variant">{{ item.variant.title }}</div>
+    {%- endunless -%}
+    {%- if item.selling_plan_allocation -%}
+      <div class="gc-cart__line-variant">{{ item.selling_plan_allocation.selling_plan.name }}</div>
+    {%- endif -%}
+
+    {%- assign spec_rows = 0 -%}
+    {%- for p in item.properties -%}
+      {%- assign k = p.first -%}
+      {%- assign lead = k | slice: 0 -%}
+      {%- if lead != '_' and p.last != blank and k != 'Part' -%}
+        {%- assign spec_rows = spec_rows | plus: 1 -%}
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- if spec_rows > 0 -%}
+      <dl class="gc-spec">
+        {%- for p in item.properties -%}
+          {%- assign k = p.first -%}
+          {%- assign lead = k | slice: 0 -%}
+          {%- if lead == '_' or p.last == blank or k == 'Part' -%}{%- continue -%}{%- endif -%}
+          <div class="gc-spec__row">
+            <dt>{{ k }}</dt>
+            <dd>{{ p.last }}</dd>
+          </div>
+        {%- endfor -%}
+      </dl>
+    {%- endif -%}
+
+    <a href="{{ item.url_to_remove }}" class="gc-cart__line-remove">{{ 'general.cart.remove' | t | upcase }}</a>
+  </div>
+  <div class="gc-cart__line-qty">
+    <a href="{{ routes.cart_change_url }}?id={{ item.key }}&quantity={{ item.quantity | minus: 1 }}" aria-label="Decrease quantity">{% if item.quantity > 1 %}&minus;{% else %}&times;{% endif %}</a>
+    <input type="number" name="updates[{{ item.key }}]" value="{{ item.quantity }}" min="0" aria-label="Quantity" onchange="this.form.submit()" onblur="if(this.value!=this.defaultValue)this.form.submit()">
+    <a href="{{ routes.cart_change_url }}?id={{ item.key }}&quantity={{ item.quantity | plus: 1 }}" aria-label="Increase quantity">+</a>
+  </div>
+  <div class="gc-cart__line-price">{{ item.final_line_price | money }}</div>
+</div>
