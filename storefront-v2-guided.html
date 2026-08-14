@@ -826,20 +826,27 @@ function render(){
          g==='most'?'<span class="star">Brightest</span>':
          g==='none'?'<span class="star star-off">No glow</span>':'')}).join('')+'</div>';
   }else{
-    var dc=canDoubleClear();
+    var dc=canDoubleClear(),isCenter=h&&h.v==='center';
     s4inner=(dc?'<div class="msg msg-plain"><div><b>Two looks, both normal.</b>'+
       '<p>The metal lit switch brings a <b>clear outer ring</b> with it. Pair it with the '+
       '<b>Clear Plastic</b> centre and the middle lights too &mdash; that is Double Clear. Any other '+
       'colour keeps the centre solid so the glow sits in a ring around it. Pick whichever you prefer.</p></div></div>'
+      :isCenter?'<div class="msg msg-plain"><div><b>Cosmetic swap, or add a glow.</b>'+
+      '<p>Your outer ring is pressed in at the factory and already glows on its own &mdash; that does '+
+      'not change no matter which colour you pick here, this is just a cosmetic swap. Want the '+
+      '<b>centre</b> to glow too? Pick <b>Clear Plastic</b> below (or use the &ldquo;Add centre '+
+      'glow&rdquo; toggle above) and we pair it with the metal lit switch for you &mdash; that pairing '+
+      'is required, a clear centre alone will not light up.</p></div></div>'
       :'<div class="msg msg-plain"><div><b>Centre button only on this finish.</b>'+
       '<p>Your outer ring is pressed in at the factory and stays put, so the glow sits around the edge '+
       'whichever colour you choose. The clear outer ring only comes as part of the metal lit switch, '+
       'which this light cannot take.</p></div></div>')+
      '<div class="pgrid pgrid-s">'+BTN.cols.map(function(c){
-       var isC=c[3]&&dc;
+       var isC=c[3]&&(dc||isCenter),
+           tip=dc?'Clear lets the centre light up as well as the ring.'
+               :'Clear pairs with the metal lit switch so the centre lights up.';
        return optBtn('opt'+(isC?' hastip':''),c[0],c[1],(S.btn&&S.btn[0]===c[0]),
-         'data-btn="'+c[0]+'"'+(isC?' data-tip="Clear lets the centre light up as well as the ring."'
-           +' title="Clear lets the centre light up as well as the ring."':''),'')}).join('')+
+         'data-btn="'+c[0]+'"'+(isC?' data-tip="'+tip+'" title="'+tip+'"':''),'')}).join('')+
        optBtn('opt',BRASSBTN.n,BRASSBTN.sw,(S.btn&&S.btn[0]==='Brass'),'data-btn="Brass"','')+'</div>';
   }
   out+=step(6,s4title,s4state,s4note,s4inner);
@@ -951,8 +958,15 @@ function wire(){
     var k=b.dataset.btn,c;
     if(k==='Brass')c=['Brass',BRASSBTN.sw,BRASSBTN.vid,false];
     else c=btnSet().cols.filter(function(x){return x[0]===k})[0];
-    S.btn=(S.btn&&S.btn[0]===c[0])?null:c; render()})});
+    S.btn=(S.btn&&S.btn[0]===c[0])?null:c;
+    /* Centre glow on a pressure-fit host is a PAIR: metal lit switch + Clear Plastic centre.
+       Keep it locked together no matter which side the customer changes, so the build can never
+       promise a glow it will not deliver (a non-clear button blocks the light). */
+    if(S.host&&S.host.v==='center'){
+      if(S.btn&&isClear(S.btn[0])){ S.presslit=true; S.sw=SWITCHES.filter(function(s){return s.id==='metal'})[0]; }
+      else { S.presslit=false; S.sw=null; S.led=null; }
+    }
+    render()})});
 }
 render();
-
 </script>
