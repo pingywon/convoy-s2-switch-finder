@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Board · Convoy S2+ Switch Finder</title>
+<meta name="description" content="Demo copy of the Convoy S2+ tail-switch builder. Finishes sorted into two columns by what they can take.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E %3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%23161b20%27/%3E %3Ccircle cx=%2716%27 cy=%2717%27 r=%279%27 fill=%27none%27 stroke=%27%23a29af7%27 stroke-width=%272.4%27/%3E %3Cline x1=%2716%27 y1=%276.5%27 x2=%2716%27 y2=%2715%27 stroke=%27%23a29af7%27 stroke-width=%272.6%27 stroke-linecap=%27round%27/%3E %3C/svg%3E">
+<style>
+html{background:#070d13;color-scheme:dark}
+body{margin:0;background:#070d13;color:#f3f7fa;-webkit-text-size-adjust:100%;
+ font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+button,input{font-family:inherit}
+.shelltop{display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;padding:12px 16px;
+ border-bottom:1px solid #243543;background:#0d151d;font-size:15px;line-height:1.4;color:#adbecb}
+.shelltop a{color:#9aa8ff;text-decoration:none;font-weight:700;white-space:nowrap}
+.shelltop a:hover{text-decoration:underline}
+.shelltop a:focus-visible{outline:3px solid #9aa8ff;outline-offset:3px;border-radius:3px}
+.shelltop b{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;font-size:12.5px;
+ font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:#00ff9f;white-space:nowrap}
+.shellmain{padding:34px 16px 0}
+</style>
+<style>
+#s2c{--bg:#070d13;--sf:#0d151d;--sf2:#141f2a;--ln:#243543;
+ --ink:#f3f7fa;--ink2:#adbecb;--ink3:#8194a3;
+ --ac:#9aa8ff;--acs:#181e38;--acl:#4a5286;
+ --ok:#00ff9f;--okb:#052a20;--okl:#16785a;
+ --no:#ff5c86;--nob:#2e0f1c;--nol:#84294a;
+ --wn:#ffb84d;--wnb:#2e2209;--wnl:#7f5c1c;
+ --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+ color:var(--ink);line-height:1.5;display:block;text-align:left;font-size:18px;padding-bottom:120px}
+#s2c *{box-sizing:border-box}
+@media(min-width:1000px){#s2c{width:min(1180px,94vw);margin-left:calc(50% - min(590px,47vw))}}
+#s2c h3{margin:0;color:var(--ink)}#s2c p{margin:0;color:var(--ink)}
+#s2c a{color:var(--ac);text-decoration:none}
+#s2c .steps{display:flex;flex-direction:column;gap:16px}
+/* step shell */
+#s2c .stp{border:2px solid var(--ln);border-radius:10px;background:var(--sf);overflow:hidden;
+ transition:opacity .2s,border-color .2s,filter .2s}
+#s2c .stp[data-s="lock"]{opacity:.32;filter:grayscale(.55);pointer-events:none}
+#s2c .stp[data-s="active"]{border-color:var(--ac);box-shadow:0 0 0 4px var(--acs)}
+#s2c .stp[data-s="done"]{border-color:var(--okl)}
+#s2c .sh{display:flex;align-items:center;gap:14px;padding:18px 22px;background:var(--sf2);
+ border-bottom:2px solid var(--ln)}
+#s2c .stp[data-s="active"] .sh{background:var(--acs);border-bottom-color:var(--acl)}
+#s2c .stp[data-s="done"] .sh{background:var(--okb);border-bottom-color:var(--okl)}
+#s2c .sn{width:40px;height:40px;flex:0 0 40px;border-radius:50%;display:grid;place-items:center;
+ font-family:var(--mono);font-size:19px;font-weight:800;background:var(--ln);color:var(--ink2)}
+#s2c .stp[data-s="active"] .sn{background:var(--ac);color:#070d13}
+#s2c .stp[data-s="done"] .sn{background:var(--ok);color:#070d13}
+#s2c .sn svg{width:22px;height:22px}
+#s2c .sh h3{font-size:22px;font-weight:800;letter-spacing:-.015em;flex:1;line-height:1.15}
+#s2c .snote{font-family:var(--mono);font-size:14px;color:var(--ink3);text-align:right;max-width:44%}
+#s2c .stp[data-s="done"] .snote{color:var(--ok)}
+#s2c .sb{padding:22px}
+#s2c .lede{font-size:17px;color:var(--ink2);line-height:1.55}
+#s2c .lede b{color:var(--ink)}
+#s2c .grp{margin-bottom:20px}#s2c .grp:last-child{margin-bottom:0}
+#s2c .grpt{font-family:var(--mono);font-size:13px;letter-spacing:.16em;text-transform:uppercase;
+ color:var(--ink3);padding-bottom:8px;margin-bottom:12px;border-bottom:1px solid var(--ln)}
+#s2c .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px}
+#s2c .pgrid-3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+#s2c .pgrid-s{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+/* pickable */
+#s2c .pick{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:14px 16px;
+ background:var(--bg);border:2px solid var(--ln);border-radius:8px;cursor:pointer;font:inherit;
+ font-size:17px;font-weight:700;color:var(--ink);text-align:left;transition:border-color .13s,transform .13s,background .13s}
+#s2c .pick:hover{border-color:var(--ac);background:var(--sf2);transform:translateY(-2px)}
+#s2c .pick:focus-visible{outline:3px solid var(--ac);outline-offset:3px}
+#s2c .pick[aria-pressed="true"]{border-color:var(--ac);background:var(--acs);box-shadow:inset 0 0 0 2px var(--ac)}
+#s2c .pick[data-oos]{opacity:.5}
+#s2c .host{flex-wrap:wrap;row-gap:8px;align-items:center;min-height:78px}
+#s2c .host .chip{order:1}
+#s2c .host .pn{order:2;flex:1 1 calc(100% - 44px);font-size:16px}
+#s2c .host .pp{order:3;flex:0 0 auto}
+#s2c .host .cap{order:4;margin-left:auto;flex:0 0 auto}
+#s2c .chip{width:30px;height:30px;flex:0 0 30px;border-radius:6px;border:1px solid rgba(175,190,205,.38);
+ box-shadow:inset 0 -7px 11px -6px rgba(0,0,0,.7)}
+#s2c .chip-x{background:var(--sf2)}
+#s2c .pn{flex:1;min-width:0;line-height:1.25}
+#s2c .psub{display:block;font-family:var(--mono);font-size:12.5px;font-weight:400;color:var(--ok);margin-top:4px}
+#s2c .pn em{font-style:normal;font-family:var(--mono);font-size:13px;color:var(--wn)}
+#s2c .pp{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--ink3)}
+#s2c .cap{font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+ padding:3px 7px;border-radius:4px;border:1px solid;white-space:nowrap}
+#s2c .cap-full{color:var(--ok);border-color:var(--okl);background:var(--okb)}
+#s2c .cap-center{color:var(--wn);border-color:var(--wnl);background:var(--wnb)}
+#s2c .cap-unknown{color:var(--no);border-color:var(--nol);background:var(--nob)}
+#s2c .star{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+ padding:3px 7px;border-radius:4px;background:var(--ok);color:#070d13;font-weight:800;white-space:nowrap}
+#s2c .opt-star{border-color:var(--okl)}
+#s2c .star-off{background:var(--wnb);color:var(--wn);border:1px solid var(--wnl)}
+/* switch cards */
+#s2c .swc{flex-direction:column;align-items:stretch;gap:9px;min-height:0;padding:18px}
+#s2c .swn{font-size:21px;font-weight:800;line-height:1.15}
+#s2c .swp{font-family:var(--mono);font-size:23px;font-weight:800;color:var(--ok)}
+#s2c .swt{align-self:flex-start;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+ text-transform:uppercase;padding:3px 8px;border-radius:4px;border:1px solid}
+#s2c .swt.lit{color:var(--ac);border-color:var(--acl);background:var(--acs)}
+#s2c .swt.nolit{color:var(--ink3);border-color:var(--ln);background:var(--sf2)}
+#s2c .swd{font-size:15px;font-weight:400;color:var(--ink2);line-height:1.45}
+#s2c .swa{font-family:var(--mono);font-size:12.5px;font-weight:400;color:var(--ink3);
+ padding-top:10px;border-top:1px solid var(--ln)}
+/* messages */
+#s2c .msg{display:flex;gap:13px;padding:16px 18px;border-radius:8px;border:1px solid;margin-bottom:16px;
+ font-size:16px;line-height:1.5}
+#s2c .msg svg{width:24px;height:24px;flex:0 0 24px;margin-top:2px}
+#s2c .msg>div>b:first-child{display:block;margin-bottom:4px}
+#s2c .msg p{font-size:15.5px;color:var(--ink2)}
+#s2c .msg-warn{background:var(--wnb);border-color:var(--wnl);color:var(--wn)}
+#s2c .msg-rule{background:var(--acs);border-color:var(--acl);color:var(--ac)}
+#s2c .msg-dc{background:var(--okb);border-color:var(--okl);color:var(--ok)}
+/* glow readout */
+#s2c .glow{border:2px solid var(--ln);border-radius:8px;padding:20px;margin-bottom:18px;background:var(--bg)}
+#s2c .gt{font-size:32px;font-weight:800;letter-spacing:-.02em;line-height:1.05;margin-bottom:8px}
+#s2c .glow p{font-size:16px;color:var(--ink2);line-height:1.5}
+#s2c .glow-double{border-color:var(--ok);background:var(--okb);box-shadow:0 0 0 4px rgba(0,255,159,.08)}
+#s2c .glow-double .gt{color:var(--ok)}
+#s2c .glow-face .gt{color:var(--ac)}#s2c .glow-face{border-color:var(--acl);background:var(--acs)}
+#s2c .glow-edge .gt{color:var(--wn)}#s2c .glow-edge{border-color:var(--wnl);background:var(--wnb)}
+#s2c .glow-none .gt,#s2c .glow-pick .gt{color:var(--ink2)}
+/* parts */
+#s2c .parts{display:flex;flex-direction:column;gap:9px}
+#s2c .part{display:flex;align-items:center;gap:13px;padding:15px 16px;background:var(--bg);
+ border:1px solid var(--ln);border-radius:8px;font-size:17px;font-weight:600;color:var(--ink);
+ transition:border-color .13s}
+#s2c .part:hover{border-color:var(--ok)}
+#s2c .part .pp{color:var(--ok);font-size:18px}
+#s2c .fine{font-size:14.5px;color:var(--ink3);margin-top:14px;padding-top:14px;border-top:1px solid var(--ln)}
+/* board columns */
+#s2c .cols2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:880px){#s2c .cols2{grid-template-columns:1fr}}
+#s2c .cw{border:2px solid var(--ln);border-radius:9px;overflow:hidden;margin-bottom:14px}
+#s2c .cw-full{border-color:var(--okl)}#s2c .cw-center{border-color:var(--wnl)}
+#s2c .cw-unknown{border-color:var(--nol)}
+#s2c .cwh{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;
+ font-size:19px;font-weight:800}
+#s2c .cw-full .cwh{background:var(--okb);color:var(--ok)}
+#s2c .cw-center .cwh{background:var(--wnb);color:var(--wn)}
+#s2c .cw-unknown .cwh{background:var(--nob);color:var(--no)}
+#s2c .cwh span{font-family:var(--mono);font-size:28px}
+#s2c .cwl{padding:12px;display:flex;flex-direction:column;gap:9px}
+/* sticky cart bar */
+#s2c .bar{position:fixed;left:0;right:0;bottom:0;background:rgba(7,13,19,.96);
+ border-top:2px solid var(--ln);padding:14px 20px;z-index:90;transform:translateY(110%);
+ transition:transform .25s;backdrop-filter:blur(8px)}
+#s2c .bar.on{transform:none}
+#s2c .barin{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+#s2c .bartxt{flex:1;min-width:170px;line-height:1.25}
+#s2c .bartxt b{display:block;font-size:19px;font-weight:800}
+#s2c .bartxt span{font-size:14px;color:var(--ink3);font-family:var(--mono)}
+#s2c .cta{font:inherit;font-size:19px;font-weight:800;padding:16px 32px;border-radius:8px;border:none;
+ background:var(--ok);color:#070d13;cursor:pointer;text-decoration:none;display:inline-block;
+ transition:opacity .13s}
+#s2c .cta:hover{opacity:.87;text-decoration:none}
+#s2c .cta:disabled{background:var(--ln);color:var(--ink3);cursor:not-allowed}
+#s2c .cta:focus-visible{outline:3px solid var(--ac);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){#s2c *{transition:none!important}}
+
+#s2c .stp:first-child .sb{padding:18px}
+#s2c .cwl .pick{background:var(--sf)}
+
+/* ===== late overrides (appended at end of stylesheet, always applied) ===== */
+#s2c .btnlink{background:none;border:none;color:var(--ac);font:inherit;font-size:16px;font-weight:700;cursor:pointer;padding:10px 0;text-decoration:underline}
+#s2c .opticwrap{display:contents}
+#s2c .acc{display:block;width:100%;text-align:left;margin-top:14px;padding:16px 18px;background:var(--sf2);
+ border:2px dashed var(--ln);border-radius:8px;cursor:pointer;font:inherit;color:var(--ink)}
+#s2c .acc:hover{border-color:var(--ac);border-style:solid}
+#s2c .acc:focus-visible{outline:3px solid var(--ac);outline-offset:3px}
+#s2c .accchev{display:inline-block;width:24px;color:var(--ac);font-size:19px;vertical-align:baseline}
+#s2c .acctxt{font-size:18px;font-weight:800}
+#s2c .accsub{display:block;margin-left:24px;font-size:14.5px;color:var(--ink3);margin-top:4px;line-height:1.45}
+#s2c .confirmrow{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:18px;padding:16px 18px;
+ background:var(--acs);border:2px solid var(--acl);border-radius:8px}
+#s2c .confirmrow p{flex:1;min-width:220px;font-size:16px;color:var(--ink2);margin:0}
+#s2c .btn.go{background:var(--ok);color:#070d13;border-color:var(--ok);font-weight:800}
+#s2c .btn.go:hover{opacity:.88;color:#070d13}
+#s2c .stp.justmoved{box-shadow:0 0 0 6px var(--acs),0 0 0 8px var(--ac)}
+#s2c .ackwrap{margin-top:24px;border:3px solid var(--wnl);border-radius:12px;overflow:hidden;background:var(--wnb)}
+#s2c .ackwrap.on{border-color:var(--ok);background:var(--okb)}
+#s2c .ackhead{padding:15px 20px;font-size:20px;font-weight:800;background:rgba(0,0,0,.3);color:var(--wn)}
+#s2c .ackwrap.on .ackhead{color:var(--ok)}
+#s2c .ackbox{display:flex;gap:18px;align-items:flex-start;padding:24px 20px;cursor:pointer;font-size:19px;
+ line-height:1.5;color:var(--ink);font-weight:600;margin:0}
+#s2c .ackbox input{width:34px;height:34px;flex:0 0 34px;margin-top:2px;accent-color:var(--ok);cursor:pointer}
+#s2c .nickrow{margin-top:20px}
+#s2c .nickrow label{display:block;font-size:16px;font-weight:700;margin-bottom:8px}
+#s2c .nickrow label em{font-style:normal;font-weight:400;color:var(--ink3)}
+#s2c .nickrow input{width:100%;padding:14px 16px;font:inherit;font-size:18px;border-radius:8px;
+ background:var(--bg);border:2px solid var(--ln);color:var(--ink)}
+#s2c .nickrow input:focus{outline:none;border-color:var(--ac)}
+#s2c .buildtag{margin-top:14px;padding:14px 16px;border-radius:8px;background:var(--sf2);
+ border-left:4px solid var(--ok);font-size:16px;color:var(--ink)}
+#s2c .buildtag b{color:var(--ok)}
+#s2c .buildtag span{display:block;font-size:14.5px;color:var(--ink3);margin-top:5px;line-height:1.45}
+
+/* Outcome readouts are neutral by default — "outer ring glows" is a normal
+   choice, not a warning. Only genuine surprises (an opaque button) stay amber. */
+#s2c .glow-ok{border-color:var(--okl);background:var(--okb)}
+#s2c .glow-ok .gt{color:var(--ok)}
+#s2c .glow-ring{border-color:var(--ln);background:var(--sf2)}
+#s2c .glow-ring .gt{color:var(--ink)}
+#s2c .glow-warn{border-color:var(--wnl);background:var(--wnb)}
+#s2c .glow-warn .gt{color:var(--wn)}
+#s2c .glow-none .gt,#s2c .glow-pick .gt{color:var(--ink2)}
+#s2c .glow-none,#s2c .glow-pick{border-color:var(--ln);background:var(--sf2)}
+#s2c .msg-plain{background:var(--sf2);border-color:var(--ln);color:var(--ink)}
+#s2c .msg-plain b{color:var(--ink)}
+#s2c .tagplain{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+ padding:3px 8px;border-radius:4px;border:1px solid var(--ln);background:var(--sf2);
+ color:var(--ink3);white-space:nowrap}
+
+/* ===== the lit-switch step, actually lit =====
+   A CSS-drawn tail cap per card: machined ring + centre button. Each switch
+   glows the way it really does — rubber over the whole face, metal at the ring,
+   both when a clear centre is fitted. Colour follows the chosen LED. */
+#s2c .swc{position:relative;overflow:hidden;--ledc:#7fe9c4}
+#s2c .swc::before{content:"";position:absolute;inset:-40% -30% auto -30%;height:170%;
+ background:radial-gradient(60% 55% at 50% 0%,color-mix(in srgb,var(--ledc,#7fe9c4) 26%,transparent),transparent 72%);
+ opacity:0;transition:opacity .35s;pointer-events:none}
+#s2c .swc.lit-face::before,#s2c .swc.lit-ring::before,#s2c .swc.lit-both::before{opacity:.5}
+#s2c .swc[aria-pressed="true"]::before{opacity:1}
+#s2c .swc>*{position:relative;z-index:1}
+#s2c .tailviz{width:78px;height:78px;flex:0 0 78px;border-radius:50%;
+ position:relative;align-self:center;margin-bottom:6px;
+ background:radial-gradient(circle at 34% 28%,#3a444e,#161c22 62%,#0b1116);
+ box-shadow:inset 0 2px 3px rgba(255,255,255,.14),inset 0 -5px 9px rgba(0,0,0,.65),0 3px 10px rgba(0,0,0,.5)}
+#s2c .tv-ring,#s2c .tv-mid{position:absolute;border-radius:50%;transition:box-shadow .3s,background .3s}
+#s2c .tv-ring{inset:9px}
+#s2c .tv-mid{inset:26px;background:#2a333c;box-shadow:inset 0 2px 3px rgba(255,255,255,.12)}
+/* rubber: the whole face lights */
+#s2c .tv-face .tv-ring{background:radial-gradient(circle,var(--ledc) 0%,color-mix(in srgb,var(--ledc) 55%,transparent) 70%,transparent 100%);
+ box-shadow:0 0 20px 5px color-mix(in srgb,var(--ledc) 62%,transparent);animation:s2pulse 2.8s ease-in-out infinite}
+#s2c .tv-face .tv-mid{background:color-mix(in srgb,var(--ledc) 78%,#fff 12%);
+ box-shadow:0 0 16px 3px color-mix(in srgb,var(--ledc) 60%,transparent)}
+/* metal: the clear outer ring lights, centre stays solid */
+#s2c .tv-ring .tv-ring{display:none}
+#s2c .tv-ring2{display:none}
+#s2c .tailviz.tv-ring .tv-ring{border:5px solid var(--ledc);background:transparent;
+ box-shadow:0 0 18px 3px color-mix(in srgb,var(--ledc) 58%,transparent),
+ inset 0 0 12px color-mix(in srgb,var(--ledc) 45%,transparent);animation:s2pulse 2.8s ease-in-out infinite}
+/* metal + clear centre: ring AND middle light */
+#s2c .tailviz.tv-both .tv-ring{border:5px solid var(--ledc);background:transparent;
+ box-shadow:0 0 20px 4px color-mix(in srgb,var(--ledc) 62%,transparent),
+ inset 0 0 14px color-mix(in srgb,var(--ledc) 50%,transparent);animation:s2pulse 2.8s ease-in-out infinite}
+#s2c .tailviz.tv-both .tv-mid{background:radial-gradient(circle,#fff 0%,var(--ledc) 62%);
+ box-shadow:0 0 18px 4px color-mix(in srgb,var(--ledc) 70%,transparent)}
+/* forward clicky: dark, deliberately */
+#s2c .tailviz.tv-off .tv-ring{border:5px solid #313b45;background:transparent}
+@keyframes s2pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.4)}}
+/* LED colour swatches show the actual glow */
+#s2c .ledopt{--ledc:#7fe9c4}
+#s2c .leddot{width:26px;height:26px;flex:0 0 26px;border-radius:50%;background:var(--ledc);
+ box-shadow:0 0 12px 2px color-mix(in srgb,var(--ledc) 65%,transparent),inset 0 -3px 5px rgba(0,0,0,.35)}
+#s2c .ledopt[aria-pressed="true"] .leddot{box-shadow:0 0 20px 5px color-mix(in srgb,var(--ledc) 80%,transparent),
+ inset 0 -3px 5px rgba(0,0,0,.35)}
+@media (prefers-reduced-motion:reduce){
+  #s2c .tv-face .tv-ring,#s2c .tailviz.tv-ring .tv-ring,#s2c .tailviz.tv-both .tv-ring{animation:none}
+}
+
+/* IR reads as a bar; Mystery is centred */
+#s2c .pgrid-bar{grid-template-columns:1fr 1fr}
+@media(max-width:720px){#s2c .pgrid-bar{grid-template-columns:1fr}}
+#s2c .pgrid-center{grid-template-columns:minmax(260px,420px);justify-content:center}
+#s2c .pgrid-center .pick{justify-content:center;text-align:center}
+/* previews sit identically in every card, whatever the text above them */
+#s2c .tailviz{display:block;margin:2px auto 12px;align-self:auto}
+#s2c .swc{align-items:stretch}
+/* metal never looks dead: faint centre sheen even before a button is picked */
+#s2c .tailviz.tv-ring .tv-mid{background:radial-gradient(circle at 50% 38%,#3d474f,#232b33 70%);
+ box-shadow:inset 0 2px 3px rgba(255,255,255,.13),0 0 10px color-mix(in srgb,var(--ledc) 22%,transparent)}
+/* tooltip replaces the old overlay badge */
+#s2c .hastip{position:relative}
+#s2c .hastip::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 10px);
+ transform:translateX(-50%);width:max-content;max-width:240px;padding:10px 12px;border-radius:8px;
+ background:#05090d;color:var(--ink);border:1px solid var(--acl);font-size:14px;font-weight:500;
+ line-height:1.4;opacity:0;visibility:hidden;transition:opacity .15s;z-index:20;pointer-events:none;
+ box-shadow:0 8px 22px rgba(0,0,0,.6)}
+#s2c .hastip:hover::after,#s2c .hastip:focus-visible::after{opacity:1;visibility:visible}
+/* pocket clip */
+#s2c .clipopt{align-items:flex-start}
+#s2c .clipd{display:block;font-size:14.5px;font-weight:400;color:var(--ink3);margin-top:4px;line-height:1.45}
+#s2c .clipno{border-style:dashed}
+/* name-this-build, now at the top */
+#s2c .namebox{margin-bottom:24px;padding:20px 22px;border:2px solid var(--acl);border-radius:10px;
+ background:var(--acs)}
+#s2c .namebox label{display:block;font-size:22px;font-weight:800;margin-bottom:6px}
+#s2c .namebox p{font-size:16px;color:var(--ink2);line-height:1.5;margin-bottom:14px;max-width:70ch}
+#s2c .namebox input{width:100%;max-width:520px;padding:14px 16px;font:inherit;font-size:18px;
+ border-radius:8px;background:var(--bg);border:2px solid var(--ln);color:var(--ink)}
+#s2c .namebox input:focus{outline:none;border-color:var(--ac)}
+#s2c .namebox .buildtag{margin-top:14px}
+
+/* ===== tail-cap previews, rebuilt =====
+   Metal illuminated is a MACHINED METAL cap: a glowing translucent ring set
+   into dark metal, with a solid metal centre button. The centre only lights
+   when a clear button is fitted. Rubber is one soft lens across the face. */
+#s2c .tailviz{background:radial-gradient(circle at 34% 26%,#49535c,#20272e 58%,#0d1318);
+ box-shadow:inset 0 2px 4px rgba(255,255,255,.18),inset 0 -7px 12px rgba(0,0,0,.7),0 4px 12px rgba(0,0,0,.55)}
+#s2c .tv-ring{inset:8px;border:none!important;background:transparent}
+#s2c .tv-mid{inset:25px}
+/* metal: glowing annulus + solid metal button */
+#s2c .tailviz.tv-ring .tv-ring,#s2c .tailviz.tv-both .tv-ring{
+ background:radial-gradient(closest-side,transparent 0,transparent 56%,
+   color-mix(in srgb,var(--ledc) 92%,#fff 8%) 63%,var(--ledc) 71%,transparent 79%)!important;
+ filter:drop-shadow(0 0 7px var(--ledc)) drop-shadow(0 0 16px color-mix(in srgb,var(--ledc) 55%,transparent));
+ box-shadow:none!important;animation:s2pulse 2.8s ease-in-out infinite}
+#s2c .tailviz.tv-ring .tv-mid{
+ background:radial-gradient(circle at 40% 30%,#f2f5f8,#a7b2bc 42%,#6b757e 74%,#454e56)!important;
+ box-shadow:inset 0 2px 3px rgba(255,255,255,.5),inset 0 -3px 6px rgba(0,0,0,.5),0 2px 5px rgba(0,0,0,.5)!important}
+/* metal + clear centre: the button lights too */
+#s2c .tailviz.tv-both .tv-mid{
+ background:radial-gradient(circle at 46% 36%,#fff 0,#fff 22%,var(--ledc) 68%)!important;
+ box-shadow:0 0 16px 4px color-mix(in srgb,var(--ledc) 75%,transparent),
+  inset 0 -2px 5px rgba(0,0,0,.3)!important}
+/* rubber: one soft glowing lens */
+#s2c .tailviz.tv-face .tv-ring{
+ background:radial-gradient(circle,color-mix(in srgb,var(--ledc) 92%,#fff 8%) 0,
+  var(--ledc) 46%,color-mix(in srgb,var(--ledc) 45%,transparent) 78%,transparent 100%)!important;
+ filter:drop-shadow(0 0 10px var(--ledc));box-shadow:none!important}
+#s2c .tailviz.tv-face .tv-mid{background:radial-gradient(circle at 46% 34%,#fff 0,
+  color-mix(in srgb,var(--ledc) 80%,#fff 20%) 60%)!important;
+ box-shadow:0 0 14px 3px color-mix(in srgb,var(--ledc) 60%,transparent)!important}
+/* forward clicky: dark metal, no light */
+#s2c .tailviz.tv-off .tv-ring{background:radial-gradient(closest-side,transparent 0,transparent 58%,
+ #2b343d 64%,#39434c 72%,transparent 79%)!important;filter:none;box-shadow:none!important}
+#s2c .tailviz.tv-off .tv-mid{background:radial-gradient(circle at 40% 30%,#7d878f,#4a535b 55%,#2e363d)!important}
+
+/* ---- tail-cap preview: deterministic layout + a ring that actually renders ---- */
+#s2c .swc{display:flex;flex-direction:column;align-items:stretch}
+#s2c .tailviz{order:-1;display:block;margin:0 auto 14px;position:relative;flex:0 0 auto}
+/* ring: border + glow (this renders reliably; the gradient-annulus version did not) */
+#s2c .tailviz.tv-ring .tv-ring,#s2c .tailviz.tv-both .tv-ring{
+ background:transparent!important;border:6px solid var(--ledc)!important;
+ filter:none!important;
+ box-shadow:0 0 16px 3px color-mix(in srgb,var(--ledc) 60%,transparent),
+  inset 0 0 12px color-mix(in srgb,var(--ledc) 45%,transparent)!important;
+ animation:s2pulse 2.8s ease-in-out infinite}
+#s2c .tailviz.tv-face .tv-ring{border:none!important;
+ background:radial-gradient(circle,color-mix(in srgb,var(--ledc) 92%,#fff 8%) 0,
+  var(--ledc) 46%,color-mix(in srgb,var(--ledc) 45%,transparent) 78%,transparent 100%)!important;
+ filter:none!important;
+ box-shadow:0 0 18px 4px color-mix(in srgb,var(--ledc) 55%,transparent)!important}
+#s2c .tailviz.tv-off .tv-ring{border:6px solid #333d46!important;background:transparent!important;
+ filter:none!important;box-shadow:none!important;animation:none}
+
+/* ===== FINAL tail-cap preview =====
+   Inner parts renamed .tv-halo / .tv-btn: the old .tv-ring collided with the
+   wrapper's own mode class (tv-ring), so child rules were hitting the wrapper. */
+#s2c .tailviz{order:-1;display:block;position:relative;width:78px;height:78px;margin:0 auto 14px;
+ border-radius:50%;
+ background:radial-gradient(circle at 34% 26%,#49535c,#20272e 58%,#0d1318);
+ box-shadow:inset 0 2px 4px rgba(255,255,255,.18),inset 0 -7px 12px rgba(0,0,0,.7),0 4px 12px rgba(0,0,0,.55)}
+#s2c .tv-halo,#s2c .tv-btn{position:absolute;border-radius:50%;box-sizing:border-box}
+#s2c .tv-halo{inset:8px}
+#s2c .tv-btn{inset:25px}
+/* metal illuminated: glowing translucent ring set into metal, solid metal button */
+#s2c .tv-ring .tv-halo,#s2c .tv-both .tv-halo{border:6px solid var(--ledc);
+ box-shadow:0 0 16px 3px color-mix(in srgb,var(--ledc) 60%,transparent),
+  inset 0 0 12px color-mix(in srgb,var(--ledc) 45%,transparent);
+ animation:s2pulse 2.8s ease-in-out infinite}
+#s2c .tv-ring .tv-btn{background:radial-gradient(circle at 40% 30%,#f2f5f8,#a7b2bc 42%,#6b757e 74%,#454e56);
+ box-shadow:inset 0 2px 3px rgba(255,255,255,.5),inset 0 -3px 6px rgba(0,0,0,.5),0 2px 5px rgba(0,0,0,.5)}
+/* metal + clear centre: the button lights too */
+#s2c .tv-both .tv-btn{background:radial-gradient(circle at 46% 36%,#fff 0,#fff 20%,var(--ledc) 70%);
+ box-shadow:0 0 16px 4px color-mix(in srgb,var(--ledc) 75%,transparent)}
+/* rubber: one soft lens across the whole face */
+#s2c .tv-face .tv-halo{background:radial-gradient(circle,
+  color-mix(in srgb,var(--ledc) 92%,#fff 8%) 0,var(--ledc) 46%,
+  color-mix(in srgb,var(--ledc) 45%,transparent) 78%,transparent 100%);
+ box-shadow:0 0 18px 4px color-mix(in srgb,var(--ledc) 55%,transparent);
+ animation:s2pulse 2.8s ease-in-out infinite}
+#s2c .tv-face .tv-btn{background:radial-gradient(circle at 46% 34%,#fff 0,
+  color-mix(in srgb,var(--ledc) 78%,#fff 22%) 62%);
+ box-shadow:0 0 14px 3px color-mix(in srgb,var(--ledc) 60%,transparent)}
+/* forward clicky: dark metal, no light */
+#s2c .tv-off .tv-halo{border:6px solid #333d46}
+#s2c .tv-off .tv-btn{background:radial-gradient(circle at 40% 30%,#7d878f,#4a535b 55%,#2e363d)}
+
+/* pressure-fit illuminated pair sits alone, so give it room */
+#s2c .pairopt{max-width:520px}
+#s2c .pairopt .swt.lit{align-self:flex-start}
+</style>
+<script>window.S2_DEMO=true</script>
+</head>
+<body>
+<div class="shelltop"><a href="index.html">&larr; All three takes</a><b>Board take</b><span>Demo copy. Add to cart shows what the store would receive. Nothing is ordered here.</span></div>
+<main class="shellmain">
+<div id="s2c">
+<div class="hero"><div class="kick" style="font-family:var(--mono);font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--ok);margin-bottom:12px">// Convoy S2+ · Switch &amp; button builder</div><h2 style="font-size:clamp(30px,5.2vw,46px);line-height:1.05;letter-spacing:-.03em;font-weight:800;margin:0 0 14px">Find your light, then build the switch</h2><p style="font-size:19px;color:var(--ink2);max-width:62ch;margin:0 0 28px">Your finish decides everything. Find it in the correct column below and the rest of the build unlocks.</p></div>
+<div id="s2c-app"></div>
+</div>
+<script>
+var ROOT="s2c-app";var SKIN="board";
+/* ---- Convoy S2+ Switch Finder :: shared data + rule engine ----
+   Compatibility rules: gadgetconnections.com/pages/convoy-s2-faq
+   Variant IDs + prices: live catalogue pull 2026-08-08
+   Cart: Shopify permalink /cart/<variantId>:<qty>,...                        */
+var VER="1.1.0";   /* stamped from the VERSION file by tools/build.py — do not edit here */
+var SHOP="https://www.gadgetconnections.com";
+var P=SHOP+"/products/";
+/* verdict: full = whole tail switch swappable | center = centre button only (pressure-fit)
+            unknown = undocumented                                            */
+var HOSTS=[
+{id:"black",n:"Black",g:"Anodized Aluminium",v:"full",sw:"#1e2124",h:"convoy-s2",vid:"51141102076219",p:24.99},
+{id:"gray",n:"Gray",g:"Anodized Aluminium",v:"full",sw:"#7c8288",h:"convoy-s2",vid:"47947674779963",p:24.99},
+{id:"golden",n:"Golden",g:"Anodized Aluminium",v:"full",sw:"#b8912f",h:"convoy-s2",vid:"49975222599995",p:24.99},
+{id:"blue",n:"Blue",g:"Anodized Aluminium",v:"center",sw:"#20509a",h:"convoy-s2",vid:"51141094342971",p:24.99},
+{id:"green",n:"Green",g:"Anodized Aluminium",v:"center",sw:"#1f6b3a",h:"convoy-s2",vid:"47309336248635",p:24.99},
+{id:"red",n:"Red",g:"Anodized Aluminium",v:"center",sw:"#9c2420",h:"convoy-s2",vid:"47309336314171",p:24.99},
+{id:"orange",n:"Orange",g:"Anodized Aluminium",v:"center",sw:"#c25a1c",h:"convoy-s2",vid:"47309336379707",p:24.99},
+{id:"purple",n:"Purple",g:"Anodized Aluminium",v:"center",sw:"#5b3a8e",h:"convoy-s2",vid:"47309336445243",p:24.99},
+{id:"tan",n:"Tan",g:"Anodized Aluminium",v:"center",sw:"#a58a63",h:"convoy-s2",vid:"47309336543547",p:24.99},
+{id:"silver",n:"Silver",g:"Anodized Aluminium",v:"center",sw:"#adb3b8",h:"convoy-s2",vid:"47331665281339",p:24.99},
+{id:"cyan",n:"Cyan",g:"Anodized Aluminium",v:"center",sw:"#1d8f9c",h:"convoy-s2",vid:"47947672912187",p:24.99},
+{id:"mao",n:"MAO (Stone White)",g:"Specialty Metal",v:"full",sw:"#ddd8cf",h:"convoy-s2-mao-finish-micro-arc-oxidation-18650-flashlight",vid:"47828408631611",p:33.99},
+{id:"brass",n:"Brass",g:"Specialty Metal",v:"full",sw:"#b08d3e",h:"convoy-s2-18650-brass-flashlight",vid:"49958612173115",p:41.99},
+{id:"cu",n:"Copper (Litnit)",canon:"cu",g:"Specialty Metal",v:"full",sw:"#a5673c",h:"convoy-s2-18650-flashlight-litnit",vid:"47948816253243",p:59.99},
+{id:"cugl",n:"Copper Glossy (unbranded)",canon:"cu",g:"Specialty Metal",v:"full",sw:"#bd7a45",h:"convoy-s2-18650-copper-glossy-cu-flashlight-litnit-copy",vid:"49958547783995",p:59.99},
+{id:"tigl",n:"Ti Glossy",g:"Titanium",v:"full",sw:"#9aa0a6",h:"convoy-s2-18650-titanium-ti-flashlight",vid:"49958591103291",p:59.99},
+{id:"tisw",n:"Ti Stone Washed",g:"Titanium",v:"full",sw:"#868d94",h:"convoy-s2-18650-titanium-ti-flashlight",vid:"49958591136059",p:59.99},
+{id:"tigc",n:"Ti Gold Circuit",g:"Titanium",v:"full",sw:"#8d7a3f",h:"convoy-s2-18650-titanium-ti-flashlight-specialty-finishes",vid:"49975294361915",p:69.99},
+{id:"timc",n:"Ti Multi-Color Circuit",g:"Titanium",v:"full",sw:"#5e6f8a",h:"convoy-s2-18650-titanium-ti-flashlight-specialty-finishes",vid:"49975294394683",p:69.99},
+{id:"tisp",n:"Ti Multi-Color Spatter",g:"Titanium",v:"center",sw:"#6b6f7d",h:"convoy-s2-18650-titanium-ti-flashlight-specialty-finishes",vid:"49975294427451",p:69.99},
+{id:"tigrc",n:"Ti Green Circuit (LE)",g:"Titanium",v:"center",sw:"#4d6b52",h:"convoy-s2-18650-titanium-ti-flashlight-green-circuit-limited-edition",vid:"50076839739707",p:69.99,oos:true},
+{id:"tips",n:"Ti Purple Swirl",g:"Titanium",v:"unknown",sw:"#6d5a86",h:"convoy-s2-18650-titanium-ti-flashlight-purple-swirl",vid:"50711023190331",p:79.99}
+];
+var RGBSW="linear-gradient(135deg,#9c2420,#b8912f,#1f6b3a,#20509a,#5b3a8e)";
+var SWITCHES=[
+{id:"rubber",n:"Rubber Illuminated",h:"convoy-illuminated-tail-switch-button-rubber",p:3.99,lit:true,takesButton:false,
+ pitch:"Rubber diffuses the LED, so the whole face glows. The brightest of the three.",
+ act:"Reverse clicky — full click on, tap to change modes",
+ cols:[["Orange","#c25a1c","47828135936315",3.99],["Blue","#20509a","47828135969083",3.99],["Green","#1f6b3a","47828136001851",3.99],["Red","#9c2420","47828136034619",3.99],["Purple","#5b3a8e","50601740108091",3.99],["Pink","#c96792","50601738961211",3.99],["White","#e8e8e6","50601739813179",3.99],["RGB Slow Fade",RGBSW,"47828136067387",4.99]]},
+{id:"metal",n:"Metal Illuminated",h:"convoy-s2-illuminated-tail-switch-button",p:4.99,lit:true,takesButton:true,
+ pitch:"Machined metal ring with a separate centre button you choose below. This is the one that can do Double Clear.",
+ act:"Reverse clicky — full click on, tap to change modes",
+ cols:[["Orange","#c25a1c","44909394493755",4.99],["Blue","#20509a","44909394526523",4.99],["Green","#1f6b3a","45259730878779",4.99],["Red","#9c2420","45259754471739",4.99],["Purple","#5b3a8e","50601834479931",4.99],["Pink","#c96792","50601833726267",4.99],["White","#e8e8e6","50601834086715",4.99],["RGB Slow Fade",RGBSW,"45259764072763",5.25]]},
+{id:"forward",n:"Forward Clicky",h:"convoy-forward-clicky-switch-for-s2-full-pcb-assembly",p:1.99,lit:false,takesButton:false,
+ pitch:"Momentary signalling without committing the light on. Cannot be illuminated — no illuminated forward clicky exists.",
+ act:"Half-press for momentary on, full click to stay on",cols:[]}
+];
+/* Any metal button can be replaced with this product. "Clear Plastic" is the Double Clear part. */
+var BTN={h:"convoy-black-button-for-metal-illuminated-switch",p:0.99,
+ cols:[["Clear Plastic","#dfe4e6","50903798841659",true],["Silver Aluminum","#adb3b8","50903776100667",false],
+ ["Black","#1e2124","50903776133435",false],["Blue","#20509a","50903776166203",false],["Cyan","#1d8f9c","50903776198971",false],
+ ["Deep Green","#1f5b39","50903776231739",false],["Gray","#7c8288","50903776264507",false],["Orange","#c25a1c","50903776297275",false],
+ ["Purple","#5b3a8e","50903776330043",false],["Red","#9c2420","50903776362811",false],["Tan","#a58a63","50903776395579",false]]};
+var BRASSBTN={n:"Brass",h:"convoy-brass-button-for-metal-illuminated-switch",p:1.99,vid:"50709001404731",sw:"#b08d3e"};
+var RUBBTN={h:"convoy-color-rubber-tail-cap-buttons-for-s2-c8-and-more",p:0.25,
+ cols:[["Black","#1e2124","50300036677947"],["Orange","#c25a1c","50300036710715"],["Green (does NOT glow)","#1f6b3a","50300036743483"],["Blue (glow)","#20509a","50300036776251"],["Translucent / White","#e8e8e6","50300036809019"]]};
+
+
+
+
+/* ===== Build options, transcribed from the live S2+ custom-build option set =====
+   Read-only transcription. No listing, PDP or option template was modified.
+   Value strings are kept verbatim so they read identically on a packing slip. */
+var EM_GROUPS=[
+ {g:"White · high CRI (Nichia 519a)", note:"The default all-rounder. Natural colour, warm to cool.",
+  items:["519a - 1800K","519a - 2700K","519a - 3000K","519a - 3500K","519a - 4000K","519a - 4500K","519a - 5000K","519a - 5700K"]},
+ {g:"White · thrower (SFT40)", note:"Tighter, further-reaching beam. Brighter, lower colour quality.",
+  items:["SFT40 - 3000K","SFT40 - 5000K","SFT40 - 6500K"]},
+ {g:"White · compact (SST20)", note:"High CRI with a tighter beam than the 519a.",
+  items:["SST20 - 4000K","SST20 - 5000K"]},
+ {g:"Single colour", note:"One fixed colour, not white. For signalling, night work and hunting.",
+  items:["CSLNM1.TG (W1)","KB CSLNM1.14 (Blue)","KP CSLNM1.F1 (Green)","KY CSLNM1.FY (Orange)","KR CSLNM1.23 (Red)","SST-20-DR 660nm (Deep Red)"]},
+ {g:"Infrared · night vision only", layout:"bar", note:"Invisible to the naked eye. Needs a NV device to be useful.",
+  items:["IR 940nm (SST-10) 1 mode only = 100%","IR 850nm (SST-10) 1 mode only = 100%"]},
+ {g:"Dealer's choice", layout:"center", note:"We pick something interesting from what is on the bench.",
+  items:["Mystery - Never know what ya might get"]}
+];
+var REFLECTORS=["Default","OP - Orange Peel (More Spill)","SMO - Smooth (More Throw)"];
+var OPTICS=["Default (Glass)","Flat 5°","Flat 10°","Flat 15°","Flat 20°","Flat 30°","Flat 45°","Flat 60°","Flat 85°",
+"Matte 15°","Matte 30°","Matte 38°","Matte 45°","Matte 85°","Stripe 15°*60°","Stripe 25°*60°","Stripe 45°*60°",
+"Bead 10°","Bead 15°","Bead 20°","Bead 25°","Bead 30°","Bead 38°","Bead 45°","Bead 60°","Bead 85°"];
+var CLIPS=[
+ {k:"press", n:"Pressure-fit clip", d:"Slides on. No tools, no marks, comes off just as easily.",
+  h:"convoy-pocket-clip-for-s2-s2-m1-and-c8", vid:"45014025568571"},
+ {k:"screw-black", n:"Screw-on — Black", d:"Bolts to the body. Will not rotate or slide off.",
+  h:"convoy-pocket-clip-screw-on-for-s2-s3-and-c8", vid:"50299985920315"},
+ {k:"screw-matte", n:"Screw-on — Stonewashed Stainless", d:"Matte steel. Bolts on, hides wear well.",
+  h:"convoy-pocket-clip-screw-on-for-s2-s3-and-c8", vid:"50299985953083"},
+ {k:"screw-shiny", n:"Screw-on — Stainless (Shiny)", d:"Polished steel. Bolts on, brightest finish.",
+  h:"convoy-pocket-clip-screw-on-for-s2-s3-and-c8", vid:"50299985887547"},
+ {k:"none", n:"No thanks", d:"No clip on this light.", h:null, vid:null}
+];
+var CONSENT="I understand that this item is non-returnable/non-refundable. Please double check your order for accuracy before placing it.";
+function emGroupOf(v){for(var i=0;i<EM_GROUPS.length;i++){if(EM_GROUPS[i].items.indexOf(v)>-1)return EM_GROUPS[i]}return null}
+function isIR(v){return !!v&&v.indexOf("IR ")===0}
+function isColour(v){var g=emGroupOf(v);return !!g&&g.g==="Single colour"}
+/* Which reflector we suggest for an emitter (customer may override). */
+function suggestRefl(v){
+  if(!v)return null;
+  if(v.indexOf("519a")===0||v.indexOf("SST20")===0)return "OP - Orange Peel (More Spill)";
+  if(v.indexOf("SFT40")===0||v.indexOf("CSLNM1")>-1)return "SMO - Smooth (More Throw)";
+  return "Default";
+}
+
+/* Build identity — so a cart holding several lights can be told apart.
+   Every line of one build carries the same "Build" property. */
+function buildNo(){
+  try{var n=parseInt(sessionStorage.getItem("gcS2BuildNo")||"1",10);return isNaN(n)?1:n}
+  catch(e){return 1}
+}
+function bumpBuildNo(){try{sessionStorage.setItem("gcS2BuildNo",String(buildNo()+1))}catch(e){}}
+function buildTag(){
+  if(!S.host)return null;
+  return S.nick?String(S.nick).trim():("Build "+buildNo());
+}
+
+/* ---------------- rule engine ---------------- */
+var S={host:null,em:null,refl:null,optic:null,beamOK:false,clip:null,presslit:false,ack:false,sw:null,led:null,btn:null,nick:''};
+function money(n){return "$"+n.toFixed(2)}
+function purl(h){return P+h}
+function canonCount(v){var s={},k;HOSTS.forEach(function(h){if(h.v===v)s[h.canon||h.id]=1});
+  k=0;for(var x in s)k++;return k}
+/* Does the CURRENT build take a separate centre button?
+   - full host + metal illuminated switch  -> yes (ring + centre, Double Clear possible)
+   - pressure-fit host                     -> yes, centre button ONLY
+   - anything else                          -> no                                */
+/* Which button family this build can swap:
+   'metal'  = metal centre button (metal illuminated switch, or a pressure-fit host)
+   'rubber' = coloured rubber tailcap button (rubber illuminated switch)
+   false    = none (forward clicky, or nothing picked yet)                        */
+function takesButton(){
+  if(!S.host)return false;
+  if(S.host.v==="center")return "metal";
+  if(!S.sw)return false;
+  if(S.sw.takesButton)return "metal";
+  return "rubber";   /* rubber illuminated AND forward clicky both take a rubber tailcap button */
+}
+function btnSet(){return takesButton()==="rubber"?RUBBTN:BTN}
+/* Rubber tailcap colours differ in how much light they pass. */
+function rubberGlow(n){
+  if(!n)return null;
+  if(n.indexOf("does NOT glow")>-1)return "none";
+  if(n.indexOf("Translucent")>-1)return "most";
+  return "some";
+}
+function canDoubleClear(){ return !!(S.host&&S.host.v==="full"&&S.sw&&S.sw.takesButton) }
+/* A pressure-fit light cannot swap its ring, but it CAN take the metal lit switch
+   together with a clear centre button — bought as a pair — to get centre glow. */
+function pressLitPair(){
+  return !!(S.host&&S.host.v==="center"&&S.presslit);
+}
+function isClear(name){ return name==="Clear Plastic" }
+/* What the customer will actually SEE lit up. */
+function glow(){
+  if(!S.host)return null;
+  if(S.host.v==="center"){
+    if(pressLitPair()){
+      return {k:"ok",t:"Centre glows",
+        d:"The metal lit switch and the clear centre button go in together as a pair, so the middle "+
+          "of your tail lights up. The factory outer ring stays as it is."};
+    }
+    return {k:"ring",t:"Outer ring glows",
+      d:"Your outer ring is pressed in at the factory and stays as it is, so the light comes from "+
+        "around the edge. A new centre button changes the look. The clear outer ring is not an "+
+        "option on this finish &mdash; it only comes as part of the metal lit switch, which this "+
+        "light cannot take."};
+  }
+  if(!S.sw)return null;
+  if(!S.sw.lit)return {k:"none",t:"No light",d:"The forward clicky is not illuminated. Nothing on the tail will glow."};
+  if(S.sw.id==="rubber"){
+    var rg=S.btn?rubberGlow(S.btn[0]):null;
+    if(rg==="none")return {k:"warn",t:"No glow",
+      d:"That rubber button is opaque &mdash; it does not glow. Pick translucent or another colour if "+
+        "you want to be able to find the light in the dark."};
+    if(rg==="most")return {k:"ok",t:"Brightest glow",
+      d:"Translucent rubber passes the most light of any button. The easiest option to spot in a dark room."};
+    return {k:"ok",t:"Full face glow",
+      d:"Rubber diffuses the LED across the whole button, tinted to match. Darker colours pass less light."};
+  }
+  if(!S.btn)return {k:"pick",t:"Pick a centre button",
+    d:"The metal lit switch brings a clear outer ring with it. Pair it with a clear centre for Double "+
+      "Clear, or with any other colour to keep the glow at the edge."};
+  if(isClear(S.btn[0]))return {k:"ok",t:"Double Clear",
+    d:"Clear outer ring plus clear centre &mdash; the whole tail lights, middle included."};
+  return {k:"ok",t:"Outer ring glows",
+    d:"The clear outer ring comes with the metal lit switch, and a "+S.btn[0]+" centre keeps the "+
+      "middle solid &mdash; so the glow sits in a ring around the button. This is the single outer "+
+      "clear look, and it is a normal way to run the light."};
+}
+/* Everything currently in the build, in cart order. */
+function lines(){
+  var L=[],BT=buildTag();
+  if(S.host){
+    var pr={};
+    if(S.em){
+      pr["Emitter"]=S.em;
+      pr["Reflector"]=S.refl||"Default";
+      pr["Optic / lens"]=S.optic||"Default (Glass)";
+    }
+    var fit=[];
+    if(S.sw)fit.push(S.sw.n+(S.led?" ("+S.led[0]+")":""));
+    if(S.btn)fit.push(S.btn[0]+" button");
+    if(fit.length)pr["Please fit"]=fit.join(" + ");
+    if(S.ack)pr["Agreed"]="Non-returnable custom build";
+    L.push({role:"The light",n:"Convoy S2+ - "+S.host.n,p:S.host.p,vid:S.host.vid,h:S.host.h,
+            sw:S.host.sw,oos:!!S.host.oos,props:pr,
+            sub:S.em?(S.em+" · "+(S.refl||"Default")+" · "+(S.optic||"Default (Glass)")):null});
+  }
+  if(pressLitPair()&&S.sw){
+    var pv=S.led?S.led[2]:null;
+    L.push({role:"Tail switch",n:S.sw.n+(S.led?" — "+S.led[0]:""),p:S.led?S.led[3]:S.sw.p,vid:pv,
+            h:S.sw.h,sw:null,pend:!S.led});
+  }
+  if(S.host&&S.host.v==="full"&&S.sw){
+    var p=S.sw.p,vid=null;
+    if(S.sw.cols.length){ if(S.led){p=S.led[3];vid=S.led[2];} }
+    else vid="50172242526523";
+    L.push({role:"Tail switch",n:S.sw.n+(S.led?" — "+S.led[0]:""),p:p,vid:vid,h:S.sw.h,sw:null,
+            pend:(S.sw.cols.length&&!S.led)});
+  }
+  if(S.clip&&S.clip.vid){
+    L.push({role:"Pocket clip",n:S.clip.n,p:0.99,vid:S.clip.vid,h:S.clip.h,sw:null});
+  }
+  if(S.btn){
+    var fam=takesButton(),isBrass=S.btn[0]==="Brass";
+    L.push({role:(fam==="rubber"?"Rubber tail button":"Centre button"),n:(fam==="rubber"?"Rubber button — ":"Centre button — ")+S.btn[0],
+            p:isBrass?BRASSBTN.p:(fam==="rubber"?RUBBTN.p:BTN.p),vid:S.btn[2],
+            h:isBrass?BRASSBTN.h:(fam==="rubber"?RUBBTN.h:BTN.h),sw:S.btn[1]});
+  }
+  return L;
+}
+function goesWith(){
+  if(!S.host)return null;
+  return S.host.n+" S2+"+(S.em?" ("+S.em+")":"");
+}
+function cartItems(){
+  var tag=buildTag(), gw=goesWith();
+  /* Properties beginning with "_" are hidden from the customer in cart/checkout but
+     stay visible on the order in admin. _gc_build is the grouping key the cart
+     template uses to draw one build as a single block. */
+  return lines().filter(function(l){return l.vid&&!l.oos}).map(function(l){
+    var p=l.props?JSON.parse(JSON.stringify(l.props)):{};
+    p["_gc_build"]=tag||"Custom build";
+    p["_gc_light"]=gw||"";
+    p["_gc_role"]=l.role||"";
+    if(l.role!=="The light"&&l.role)p["Part"]=l.role;
+    var o={id:Number(l.vid),quantity:1};
+    if(Object.keys(p).length)o.properties=p;
+    return o});
+}
+/* Build is ready to buy when nothing is still pending a choice. */
+function ready(){
+  var L=lines(); if(!L.length)return false;
+  for(var i=0;i<L.length;i++){ if(L[i].pend||!L[i].vid)return false }
+  if(S.host&&S.host.v==="full"&&!S.sw)return false;   /* full hosts must resolve the switch step */
+  if(!S.em)return false;
+  if(!S.refl)return false;
+  if(!S.optic)return false;
+  if(!S.clip)return false;   /* 'No thanks' counts as answered */
+  if(!S.ack)return false;
+  if(S.host&&S.host.oos)return false;
+  return true;
+}
+/* ---- shared UI: progressive steps, dim what is not available yet ---- */
+var ICO={ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
+warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>'};
+var R=document.getElementById(ROOT);
+/* Off the store there is no cart to post to. A page that sets window.S2_DEMO shows what
+   would have been sent instead of sending it. */
+var DEMO=!!window.S2_DEMO;
+/* Scroll so the section HEADER (number + title) is at the top of the viewport,
+   never mid-way through its options — landing mid-list makes people miss steps. */
+function goTo(node){
+  if(!node)return;
+  var y=node.getBoundingClientRect().top+(window.pageYOffset||document.documentElement.scrollTop)-84;
+  try{window.scrollTo({top:y<0?0:y,behavior:"smooth"})}catch(e){window.scrollTo(0,y<0?0:y)}
+  node.classList.add("justmoved");
+  setTimeout(function(){node.classList.remove("justmoved")},1400);
+}
+function stepEl(n){return R.querySelector('.stp[data-n="'+n+'"]')}
+function e_(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function a_(s){return e_(s).replace(/"/g,'&quot;')}
+function cartSig(){return JSON.stringify(cartItems())}
+/* Demo copy only: the lines the store's cart would have received, as the bench reads them. */
+function demoOut(){
+  var L=lines().filter(function(l){return l.vid&&!l.oos}),C=cartItems();
+  return '<div class="demoout" style="margin-top:16px"><div class="msg msg-plain"><div><b>Demo copy &mdash; nothing was added.</b>'+
+    '<p>On gadgetconnections.com this button puts the lines below in the cart. Each one carries the '+
+    'build tag <b>'+e_(buildTag()||'')+'</b>, so every part stays with its light.</p></div></div>'+
+    '<div class="parts">'+C.map(function(it,i){
+      var p=it.properties||{},rows=[];
+      for(var k in p){if(k.charAt(0)!=='_')rows.push(e_(k)+': '+e_(p[k]))}
+      return '<div class="part"><span class="chip chip-x"></span><span class="pn">'+e_(L[i].n)+
+        '<span class="psub">'+rows.join('<br>')+'</span></span></div>'}).join('')+'</div></div>';
+}
+function el(t){var d=document.createElement('div');d.innerHTML=t;return d}
+function step(n,title,state,note,inner){
+  return '<section class="stp" data-s="'+state+'" data-n="'+n+'"><div class="sh"><span class="sn">'+
+   (state==='done'?ICO.ok:state==='lock'?ICO.lock:n)+'</span><h3>'+title+'</h3>'+
+   (note?'<span class="snote">'+note+'</span>':'')+'</div><div class="sb">'+inner+'</div></section>';
+}
+function hostBtn(h,extra){
+  return '<button class="pick host'+(extra||'')+'" type="button" data-h="'+h.id+'" aria-pressed="'+
+   (S.host&&S.host.id===h.id)+'"'+(h.oos?' data-oos="1"':'')+'>'+
+   '<span class="chip" style="background:'+h.sw+'"></span>'+
+   '<span class="pn">'+h.n+(h.oos?' <em>sold out</em>':'')+'</span>'+
+   '<span class="cap cap-'+h.v+'">'+(h.v==='full'?'Full switch':h.v==='center'?'Centre only':'Ask us')+'</span></button>';
+}
+function optBtn(cls,label,swatch,pressed,data,badge){
+  return '<button class="pick '+cls+'" type="button" '+data+' aria-pressed="'+pressed+'">'+
+   (swatch?'<span class="chip" style="background:'+swatch+'"></span>':'')+
+   '<span class="pn">'+label+'</span>'+(badge||'')+'</button>';
+}
+function render(){
+  var out='',h=S.host,g=glow();
+  /* ---- 1. the light ---- */
+  var groups=[];HOSTS.forEach(function(x){if(groups.indexOf(x.g)<0)groups.push(x.g)});
+  var inner='';
+  if(SKIN==='board'){
+    inner='<div class="cols2">'+
+     ['full','center'].map(function(v){
+      var list=HOSTS.filter(function(x){return x.v===v});
+      return '<div class="cw cw-'+v+'"><div class="cwh"><b>'+(v==='full'?'Whole switch swaps':'Centre button only')+
+       '</b><span>'+canonCount(v)+'</span></div><div class="cwl">'+list.map(function(x){return hostBtn(x)}).join('')+
+       '</div></div>'}).join('')+'</div>'+
+     '<div class="cw cw-unknown"><div class="cwh"><b>Not documented</b><span>'+canonCount('unknown')+'</span></div>'+
+     '<div class="cwl">'+HOSTS.filter(function(x){return x.v==='unknown'}).map(function(x){return hostBtn(x)}).join('')+'</div></div>';
+  }else{
+    inner=groups.map(function(gr){
+      return '<div class="grp"><div class="grpt">'+gr+'</div><div class="pgrid">'+
+       HOSTS.filter(function(x){return x.g===gr}).map(function(x){return hostBtn(x)}).join('')+'</div></div>'}).join('');
+  }
+  out+=step(1,'Pick your light',h?'done':'active',h?h.n:'Start here',
+    '<p class="lede">Every answer below depends on this. <b>'+canonCount('full')+
+    '</b> finishes let you change the whole tail switch; <b>'+canonCount('center')+
+    '</b> are pressed in at the factory and only take a new centre button.</p>'+inner);
+
+
+  /* ---- 2. emitter (real option set) ---- */
+  var e2state=!h?'lock':(S.em?'done':'active');
+  var e2note=!h?'Pick a light first':(S.em||'Choose an emitter');
+  var e2inner;
+  if(!h){e2inner='<p class="lede">Choose your light above and this unlocks.</p>'}
+  else{
+    e2inner='<div class="msg msg-rule">'+ICO.warn+'<div><b>This is what the light actually looks like.</b>'+
+     '<p>The emitter sets colour and beam. Most people want a white one &mdash; the 519a group is the '+
+     'safe pick. The others are for specific jobs.</p></div></div>'+
+     EM_GROUPS.map(function(gr){
+      return '<div class="grp"><div class="grpt">'+gr.g+'</div>'+
+       '<p class="lede" style="margin-bottom:10px">'+gr.note+'</p>'+
+       '<div class="pgrid'+(gr.layout==='bar'?' pgrid-bar':(gr.layout==='center'?' pgrid-center':''))+'">'+
+       gr.items.map(function(v){
+         var badge = isIR(v)?'<span class="star star-off">One mode only</span>':
+                     (v.indexOf('Mystery')===0?'<span class="star star-off">Surprise</span>':'');
+         return optBtn('opt',v,null,(S.em===v),'data-em="'+v.replace(/"/g,'&quot;')+'"',badge)}).join('')+
+       '</div></div>'}).join('');
+    if(isIR(S.em))e2inner+='<div class="msg msg-warn">'+ICO.warn+'<div><b>Infrared is invisible.</b>'+
+      '<p>You will see nothing by eye &mdash; it only works through night-vision gear, and it runs at '+
+      '100% output with no other modes.</p></div></div>';
+    else if(isColour(S.em))e2inner+='<div class="msg msg-rule">'+ICO.warn+'<div><b>This is a single-colour emitter.</b>'+
+      '<p>It only puts out that colour &mdash; it will not work as a general white flashlight.</p></div></div>';
+  }
+  out+=step(2,'Pick the emitter',e2state,e2note,e2inner);
+
+  /* ---- 3. beam shaping: reflector + optic ---- */
+  var b3state=!S.em?'lock':((S.refl&&S.optic)?'done':'active');
+  var b3note=!S.em?'Pick an emitter first':(S.refl.split(' - ')[0]+' · '+S.optic);
+  var b3inner;
+  if(!S.em){b3inner='<p class="lede">Pick an emitter and this unlocks.</p>'}
+  else{
+    var sug=suggestRefl(S.em);
+    b3inner='<div class="lbl">Reflector</div><p class="lede" style="margin-bottom:10px">'+
+      'We suggest <b>'+sug+'</b> for the '+S.em+', but it is your call.</p><div class="pgrid">'+
+      REFLECTORS.map(function(r){return optBtn('opt'+(r===sug?' opt-star':''),r,null,(S.refl===r),
+        'data-refl="'+r.replace(/"/g,'&quot;')+'"',r===sug?'<span class="star">Suggested</span>':'')}).join('')+'</div>'+
+      '<div class="lbl">Optic / lens</div>'+
+      '<p class="lede" style="margin-bottom:10px">Glass is the standard. The angled optics trade throw for a '+
+      'wider, softer flood &mdash; only pick one if you know you want it.</p><div class="pgrid pgrid-s">'+
+      OPTICS.map(function(o,i){
+        var hide=(i>0&&!S.showOptics)?' style="display:none"':'';
+        return '<span'+hide+' class="opticwrap">'+optBtn('opt'+(i===0?' opt-star':''),o,null,(S.optic===o),
+          'data-optic="'+o.replace(/"/g,'&quot;')+'"',i===0?'<span class="star">Standard</span>':'')+'</span>'}).join('')+
+      '</div>'+
+      '<button class="acc" type="button" id="moreoptics" aria-expanded="'+(S.showOptics?'true':'false')+'">'+
+        '<span class="accchev">'+(S.showOptics?'▾':'▸')+'</span>'+
+        '<span class="acctxt">'+(S.showOptics?'Hide the other optics':'Show all '+OPTICS.length+' optics')+'</span>'+
+        '<span class="accsub">'+(S.showOptics?'Collapse back to the standard glass lens':'Flat, Matte, Stripe and Bead angles — optional')+'</span>'+
+      '</button>'+
+      (S.beamOK?'':'<div class="confirmrow"><p>We have already picked sensible defaults. '+
+        'Change them if you want, then continue.</p>'+
+        '<button class="btn go" type="button" id="beamok">These look good &rarr;</button></div>');
+  }
+  out+=step(3,'Shape the beam',b3state,b3note,b3inner);
+
+  /* ---- 3. the switch ---- */
+  /* A locked step ignores the mouse. On a pressed-in finish the ring stays, but this step
+     holds the optional centre-glow pair, so it must stay open. */
+  var s2state = (!h||!S.em||!S.refl||!S.optic)?'lock':(h.v==='full'?(S.sw?'done':'active'):
+                (h.v==='center'?(S.presslit?'done':'open'):'lock'));
+  var s2note = !h?'Pick a light first':(h.v==='center'?(S.presslit?'Centre glow added':'Ring stays · centre glow optional'):(S.sw?S.sw.n:''));
+  var s2inner;
+  if(!h){ s2inner='<p class="lede">Choose your light above and this unlocks.</p>' }
+  else if(!S.em||!S.refl||!S.optic){ s2inner='<p class="lede">Pick your emitter and beam first.</p>' }
+  else if(h.v==='center'){
+    s2inner='<div class="msg msg-plain"><div><b>The '+h.n+' outer ring does not come out.</b>'+
+     '<p>It is pressed into the tail cap at the factory, so you cannot fit a different ring. You '+
+     '<b>can</b> still change the centre button below.</p></div></div>'+
+     '<button class="pick swc pairopt" type="button" id="presslit" aria-pressed="'+S.presslit+'">'+
+       '<span class="tailviz '+(S.presslit?'tv-both':'tv-off')+'" aria-hidden="true">'+
+       '<span class="tv-halo"></span><span class="tv-btn"></span></span>'+
+       '<span class="swn">Add centre glow</span>'+
+       '<span class="swt lit">Metal lit switch + clear centre</span>'+
+       '<span class="swd">Your ring stays as it is, but the metal lit switch and a clear centre '+
+       'button go in together and light the middle of the tail. They only work as a pair, so we '+
+       'add both.</span>'+
+       '<span class="swa">'+(S.presslit?'Added — pick a colour below':'Optional')+'</span></button>';
+  }else if(h.v==='unknown'){
+    s2inner='<div class="msg msg-warn">'+ICO.warn+'<div><b>We have not verified the '+h.n+'.</b>'+
+     '<p>It appears on neither compatibility list. Message us before buying a switch and we will open one.</p></div></div>';
+  }else{
+    s2inner='<div class="msg msg-rule">'+ICO.warn+'<div><b>Pick one — they are mutually exclusive.</b>'+
+     '<p>There is no illuminated forward clicky. Momentary operation means giving up the glowing tail.</p></div></div>'+
+     '<div class="pgrid pgrid-3">'+SWITCHES.map(function(sw){
+       /* live preview: shows how THIS switch actually lights, in the chosen colour */
+       var lc=(S.sw&&S.sw.id===sw.id&&S.led)?S.led[1]:'#7fe9c4';
+       var mode=sw.id==='rubber'?'face':(sw.id==='metal'?((S.sw&&S.sw.id==='metal'&&S.btn&&isClear(S.btn[0]))?'both':'ring'):'off');
+       var viz='<span class="tailviz tv-'+mode+'" aria-hidden="true">'+
+               '<span class="tv-halo"></span><span class="tv-btn"></span></span>';
+       return '<button class="pick swc lit-'+mode+'" type="button" data-sw="'+sw.id+'" style="--ledc:'+lc+'" aria-pressed="'+(S.sw&&S.sw.id===sw.id)+'">'+
+        viz+'<span class="swn">'+sw.n+'</span>'+
+        '<span class="swt '+(sw.lit?'lit':'nolit')+'">'+(sw.lit?'Lights up':'No light')+'</span>'+
+        '<span class="swd">'+sw.pitch+'</span><span class="swa">'+sw.act+'</span></button>'}).join('')+'</div>';
+  }
+  if(h&&h.v==='unknown')s2state='lock';
+  out+=step(4,'Pick your switch',s2state,s2note,s2inner);
+
+  /* ---- 5. button (metal centre, or coloured rubber tailcap) ---- */
+  var fam=takesButton();
+  var s4state = fam?(S.btn?'done':'active'):'lock';
+  var s4title = fam==='rubber'?'Pick the rubber button':'Pick the centre button';
+  var s4note = fam?(S.btn?S.btn[0]:'Optional'):'Not available on this build';
+  var s4inner;
+  if(!fam){
+    s4inner='<p class="lede">'+(!h?'Pick a light first.':
+      S.sw&&S.sw.id==='forward'?'The forward clicky has no illuminated button to swap.':
+      'Pick a switch above and the buttons unlock.')+'</p>';
+  }else if(fam==='rubber'){
+    s4inner='<div class="msg msg-plain"><div><b>Optional &mdash; your switch already ships with a button.</b>'+
+     '<p>These swap the rubber tailcap for a different colour, and they sit straight over the '+
+     'illuminated rubber switch &mdash; including a coloured one, so you can stack a colour on a '+
+     'colour. What changes is how much light gets through: <b>Translucent / White</b> passes the '+
+     'most, and <b>Green does not glow at all</b>.</p></div></div>'+
+     '<div class="pgrid pgrid-s">'+RUBBTN.cols.map(function(c){
+       var g=rubberGlow(c[0]);
+       return optBtn('opt'+(g==='most'?' opt-star':''),c[0],c[1],(S.btn&&S.btn[0]===c[0]),
+         'data-btn="'+c[0]+'"',
+         g==='most'?'<span class="star">Brightest</span>':
+         g==='none'?'<span class="star star-off">No glow</span>':'')}).join('')+'</div>';
+  }else{
+    var dc=canDoubleClear(),isCenter=h&&h.v==='center';
+    s4inner=(dc?'<div class="msg msg-plain"><div><b>Two looks, both normal.</b>'+
+      '<p>The metal lit switch brings a <b>clear outer ring</b> with it. Pair it with the '+
+      '<b>Clear Plastic</b> centre and the middle lights too &mdash; that is Double Clear. Any other '+
+      'colour keeps the centre solid so the glow sits in a ring around it. Pick whichever you prefer.</p></div></div>'
+      :isCenter?'<div class="msg msg-plain"><div><b>Cosmetic swap, or add a glow.</b>'+
+      '<p>Your outer ring is pressed in at the factory and already glows on its own &mdash; that does '+
+      'not change no matter which colour you pick here, this is just a cosmetic swap. Want the '+
+      '<b>centre</b> to glow too? Pick <b>Clear Plastic</b> below (or use the &ldquo;Add centre '+
+      'glow&rdquo; button above) and we pair it with the metal lit switch for you &mdash; that pairing '+
+      'is required, a clear centre alone will not light up.</p></div></div>'
+      :'<div class="msg msg-plain"><div><b>Centre button only on this finish.</b>'+
+      '<p>Your outer ring is pressed in at the factory and stays put, so the glow sits around the edge '+
+      'whichever colour you choose. The clear outer ring only comes as part of the metal lit switch, '+
+      'which this light cannot take.</p></div></div>')+
+     '<div class="pgrid pgrid-s">'+BTN.cols.map(function(c){
+       var isC=c[3]&&(dc||isCenter),
+           tip=dc?'Clear lets the centre light up as well as the ring.'
+               :'Clear pairs with the metal lit switch so the centre lights up.';
+       return optBtn('opt'+(isC?' hastip':''),c[0],c[1],(S.btn&&S.btn[0]===c[0]),
+         'data-btn="'+c[0]+'"'+(isC?' data-tip="'+tip+'" title="'+tip+'"':''),'')}).join('')+
+       optBtn('opt',BRASSBTN.n,BRASSBTN.sw,(S.btn&&S.btn[0]==='Brass'),'data-btn="Brass"','')+'</div>';
+  }
+  out+=step(5,s4title,s4state,s4note,s4inner);
+
+  /* ---- 6. LED colour ---- */
+  var needLed = !!(S.sw&&S.sw.cols.length&&(h&&(h.v==='full'||pressLitPair())));
+  var s3state = needLed?(S.led?'done':'active'):'lock';
+  var s3note = needLed?(S.led?S.led[0]:'Choose a colour'):(S.sw&&!S.sw.lit?'Forward clicky has no LED':'Pick a switch first');
+  var s3inner = needLed
+    ? '<div class="msg msg-rule">'+ICO.warn+'<div><b>This glow is for finding the light in the dark.</b>'+
+      '<p>The lit tail is a locator, not a light source &mdash; it marks where the flashlight is on a '+
+      'bedside table or in a bag. It does not light the room. Some colours read brighter than others: '+
+      'white and translucent show most, deeper colours least.</p></div></div>'+
+      '<div class="pgrid pgrid-s">'+S.sw.cols.map(function(c){
+        return '<button class="pick opt ledopt" type="button" data-led="'+c[0]+'" aria-pressed="'+
+          (S.led&&S.led[0]===c[0])+'" style="--ledc:'+c[1]+'">'+
+          '<span class="leddot"></span><span class="pn">'+c[0]+'</span></button>'}).join('')+'</div>'
+    : '<p class="lede">'+(S.sw&&!S.sw.lit?'The forward clicky is not illuminated, so there is no LED colour to pick.'
+        :'Pick an illuminated switch above and the colours unlock.')+'</p>';
+  out+=step(6,'Pick the LED colour',s3state,s3note,s3inner);
+
+  /* ---- pocket clip ---- */
+  var c7state=!h?'lock':(S.clip?'done':'active');
+  var c7note=!h?'Pick a light first':(S.clip?S.clip.n:'Choose one, or decline');
+  var c7inner;
+  if(!h){c7inner='<p class="lede">Choose your light above and this unlocks.</p>'}
+  else{
+    c7inner='<div class="msg msg-plain"><div><b>Clips to the body, so every finish can take one.</b>'+
+     '<p>Pressure-fit slides on and off with no tools and no marks. Screw-on bolts down and will not '+
+     'rotate or slide, but it is a permanent fitting.</p></div></div><div class="pgrid">'+
+     CLIPS.map(function(cl){
+       return '<button class="pick clipopt'+(cl.k==='none'?' clipno':'')+'" type="button" data-clip="'+cl.k+'" aria-pressed="'+
+        (S.clip&&S.clip.k===cl.k)+'"><span class="pn"><b>'+cl.n+'</b><span class="clipd">'+cl.d+'</span></span></button>'
+     }).join('')+'</div>';
+  }
+  out+=step(7,'Add a pocket clip',c7state,c7note,c7inner);
+
+  /* ---- 5. result ---- */
+  var L=lines(),rdy=ready();
+  var res='';
+  if(g)res+='<div class="glow glow-'+g.k+'"><div class="gt">'+g.t+'</div><p>'+g.d+'</p></div>';
+  else res+='<p class="lede">Your result appears here as you build.</p>';
+  if(L.length){
+    res+='<div class="parts">'+L.map(function(l){
+      return '<a class="part" href="'+purl(l.h)+'" target="_blank" rel="noopener">'+
+       (l.sw?'<span class="chip" style="background:'+l.sw+'"></span>':'<span class="chip chip-x"></span>')+
+       '<span class="pn">'+l.n+(l.pend?' <em>— choose a colour</em>':'')+(l.oos?' <em>— sold out</em>':'')+
+       (l.sub?'<span class="psub">'+l.sub+'</span>':'')+'</span>'+
+       '</a>'}).join('')+'</div>'+
+     (S.sw?'<div class="msg msg-dc"><div><b>We will fit the '+S.sw.n+' for you.</b>'+
+       '<p>Because the switch is on the same order, it ships installed &mdash; you do not have to do it yourself.</p></div></div>':'')+
+     '<div class="ackwrap'+(S.ack?' on':'')+'">'+
+       '<div class="ackhead">'+(S.ack?'✓ Acknowledged':'⚠ Read this before you order')+'</div>'+
+       '<label class="ackbox"><input type="checkbox" id="ack"'+(S.ack?' checked':'')+'>'+
+       '<span>'+CONSENT+'</span></label></div>'+
+     '<div class="nickrow"><label for="nick2">Name this build <em>(optional — helps if you are ordering more than one)</em></label>'+
+       '<input type="text" class="nickin" id="nick2" maxlength="40" placeholder="e.g. Dad\'s light" value="'+
+       a_(S.nick||'')+'"></div>'+
+     '<div class="buildtag"><b>Tagged as:</b> <i class="tagv" style="font-style:normal">'+e_(buildTag()||'—')+'</i>'+
+       '<span>Every part above carries this tag, so we know which switch and button belong to which light.</span></div>';
+    var cm=(S.cartMsg&&S.cartMsg.sig===cartSig())?S.cartMsg.k:null;
+    if(cm==='err')res+='<div class="msg msg-warn carterr" role="alert" style="margin-top:16px">'+ICO.warn+
+      '<div><b>Not added &mdash; the cart did not answer.</b><p>Nothing was added and nothing was charged. '+
+      'Press Add to cart again. If it keeps happening, message us and we will put the order together with you.</p></div></div>';
+    if(cm==='demo')res+=demoOut();
+  }
+  out+=step(8,'Your build',rdy?'done':(L.length?'active':'lock'),rdy?'Ready':'',res);
+  var intro='<div class="namebox"><label for="nick">Name this build</label>'+
+    '<p>Call it anything &mdash; it just keeps every part of this light together, so we know which '+
+    'switch and button belong to which. Really useful if you are ordering more than one custom light.</p>'+
+    '<input type="text" class="nickin" id="nick" maxlength="40" placeholder="e.g. Dad&apos;s light" value="'+
+    a_(S.nick||'')+'">'+
+    '</div>';
+  R.innerHTML=intro+'<div class="steps">'+out+'</div>'+
+    '<p class="s2ver" style="margin:22px 0 0;text-align:center;font-family:var(--mono);font-size:12.5px;'+
+    'color:var(--ink3)">Switch Finder v'+VER+(DEMO?' &middot; demo copy':'')+'</p>'+
+    '<div class="bar'+(L.length?' on':'')+'"><div class="barin"><div class="bartxt">'+
+    (rdy?'<b>'+L.length+' item'+(L.length>1?'s':'')+' ready</b><span>Total shown at checkout</span>'
+        :'<b>Keep going</b><span>'+(!h?'Pick your light to start':'Finish the highlighted step')+'</span>')+
+    '</div>'+(rdy?'<button class="cta" type="button" id="addcart">Add to cart &rarr;</button>'
+        :'<button class="cta" type="button" disabled>Add to cart</button>')+'</div></div>';
+  wire();
+  var ac=document.getElementById('addcart');
+  if(ac)ac.addEventListener('click',function(){
+    if(DEMO){S.cartMsg={k:'demo',sig:cartSig()};render();goTo(R.querySelector('.demoout'));return}
+    ac.disabled=true;ac.textContent='Adding…';
+    fetch('/cart/add.js',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({items:cartItems()})})
+      .then(function(r){if(!r.ok)throw 0;bumpBuildNo();window.location='/cart'})
+      .catch(function(){
+        /* No permalink fallback: a permalink cannot carry the build note, and a custom
+           build that arrives without its note is worse than no order. Say so; let them retry. */
+        S.cartMsg={k:'err',sig:cartSig()};render();goTo(R.querySelector('.carterr'))});
+  });
+}
+function wire(){
+  R.querySelectorAll('[data-h]').forEach(function(b){b.addEventListener('click',function(){
+    var n=HOSTS.filter(function(x){return x.id===b.dataset.h})[0];
+    S.host=(S.host&&S.host.id===n.id)?null:n;
+    S.em=null;S.refl=null;S.optic=null;S.beamOK=false;S.clip=null;S.presslit=false;S.ack=false;S.sw=null;S.led=null;S.btn=null;
+    render(); if(S.host)goTo(stepEl(2))})});
+  R.querySelectorAll('[data-em]').forEach(function(b){b.addEventListener('click',function(){
+    var v=b.dataset.em;
+    if(S.em===v){S.em=null;S.refl=null;S.optic=null;}
+    else{S.em=v;S.refl=suggestRefl(v);S.optic=OPTICS[0];}
+    render(); if(S.em)goTo(stepEl(3))})});   /* land ON the beam step, not past it */
+  R.querySelectorAll('[data-refl]').forEach(function(b){b.addEventListener('click',function(){
+    S.refl=b.dataset.refl; render()})});
+  R.querySelectorAll('[data-optic]').forEach(function(b){b.addEventListener('click',function(){
+    S.optic=b.dataset.optic; render()})});
+  var mo=document.getElementById('moreoptics');
+  if(mo)mo.addEventListener('click',function(){S.showOptics=!S.showOptics;render();goTo(stepEl(3))});
+  var pl=document.getElementById('presslit');
+  if(pl)pl.addEventListener('click',function(){
+    S.presslit=!S.presslit;
+    if(S.presslit){ S.sw=SWITCHES.filter(function(s){return s.id==='metal'})[0];
+                    S.btn=BTN.cols.filter(function(c){return c[0]==='Clear Plastic'})[0]; }
+    else { S.sw=null;S.led=null;S.btn=null; }
+    render(); goTo(stepEl(S.presslit?6:4))});
+  R.querySelectorAll('[data-clip]').forEach(function(b){b.addEventListener('click',function(){
+    var cl=CLIPS.filter(function(x){return x.k===b.dataset.clip})[0];
+    S.clip=(S.clip&&S.clip.k===cl.k)?null:cl; render(); if(S.clip)goTo(stepEl(8))})});
+  /* The name is asked twice (top of page, and beside the build). Both boxes are one value. */
+  var nks=R.querySelectorAll('.nickin');
+  nks.forEach(function(nk){nk.addEventListener('input',function(){
+    S.nick=nk.value;
+    nks.forEach(function(o){if(o!==nk)o.value=nk.value});
+    var tv=R.querySelector('.tagv'); if(tv)tv.textContent=buildTag()||'—'})});
+  var ak=document.getElementById('ack');
+  if(ak)ak.addEventListener('change',function(){S.ack=ak.checked;render()});
+  R.querySelectorAll('[data-sw]').forEach(function(b){b.addEventListener('click',function(){
+    var n=SWITCHES.filter(function(x){return x.id===b.dataset.sw})[0],was=takesButton();
+    S.sw=(S.sw&&S.sw.id===n.id)?null:n; S.led=null;
+    /* Metal centre buttons and rubber tailcap buttons are different parts. A button picked
+       for one family must not ride along when the switch changes to the other. */
+    if(takesButton()!==was)S.btn=null;
+    render();
+    var nx=R.querySelector('.stp[data-s="active"]'); if(nx)nx.scrollIntoView({behavior:'smooth',block:'center'})})});
+  R.querySelectorAll('[data-led]').forEach(function(b){b.addEventListener('click',function(){
+    var c=S.sw.cols.filter(function(x){return x[0]===b.dataset.led})[0];
+    S.led=(S.led&&S.led[0]===c[0])?null:c; render(); if(S.led)goTo(stepEl(7))})});
+  R.querySelectorAll('[data-btn]').forEach(function(b){b.addEventListener('click',function(){
+    var k=b.dataset.btn,c;
+    if(k==='Brass')c=['Brass',BRASSBTN.sw,BRASSBTN.vid,false];
+    else c=btnSet().cols.filter(function(x){return x[0]===k})[0];
+    S.btn=(S.btn&&S.btn[0]===c[0])?null:c;
+    /* Centre glow on a pressed-in finish is a PAIR: metal lit switch + Clear Plastic centre.
+       Keep the two locked together whichever side the customer changes, so the build can
+       never promise a glow it will not deliver (a solid button blocks the light). */
+    if(S.host&&S.host.v==='center'){
+      if(S.btn&&isClear(S.btn[0])){S.presslit=true;S.sw=SWITCHES.filter(function(s){return s.id==='metal'})[0]}
+      else{S.presslit=false;S.sw=null;S.led=null}
+    }
+    render();
+    if(S.btn)goTo(stepEl(S.sw&&S.sw.cols.length?6:7))})});
+}
+render();
+
+</script>
+</main>
+</body>
+</html>
