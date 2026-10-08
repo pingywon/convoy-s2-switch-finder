@@ -149,6 +149,13 @@ async function storeChecks(browser, file) {
      'a build name typed in the lower box is kept', await st(p, 'JSON.stringify(S.nick)'));
   await p.close();
 
+  p = await open(browser, html, 200);
+  const soldOut = await st(p, 'HOSTS.filter(function(h){return h.oos}).map(function(h){return h.id})');
+  for (const id of soldOut) await click(p, '[data-h="' + id + '"]');
+  ok(await st(p, 'S.host===null') && (await st(p, 'Array.prototype.every.call(document.querySelectorAll("[data-oos]"),function(b){return b.disabled})')),
+     'a sold-out finish is shown but cannot start a build (' + (soldOut.join(', ') || 'none flagged') + ')');
+  await p.close();
+
   p = await open(browser, html, 500);
   await start(p, 'brass');
   await click(p, '[data-sw="forward"]');
@@ -193,6 +200,44 @@ async function demoChecks(browser, page) {
   await p.close();
 }
 
+/* No dead ends: every finish that can be picked must reach a finished build down every
+   kind of path, at phone size. The rules are shared, so one take is enough. */
+async function everyFinishChecks(browser) {
+  const file = path.join(ROOT, '_site', 'console.html');
+  if (!fs.existsSync(file)) { ok(false, '_site/console.html exists (run tools/build.py first)'); return; }
+  console.log('\n_site/console.html  (every finish, phone size)');
+  const p = await open(browser, fs.readFileSync(file, 'utf8'), 200);
+  await p.setViewport({width: 390, height: 800});
+  const hosts = await st(p, 'HOSTS.filter(function(h){return !h.oos}).map(function(h){return {id:h.id,v:h.v,n:h.n}})');
+  const PATHS = {
+    full: [['[data-sw="rubber"]', '[data-btn="Translucent / White"]', '[data-led="Blue"]'],
+           ['[data-sw="metal"]', '[data-btn="Clear Plastic"]', '[data-led="Red"]'],
+           ['[data-sw="forward"]']],
+    center: [[], ['[data-btn="Tan"]'], ['[data-btn="Clear Plastic"]', '[data-led="Green"]'], ['#presslit', '[data-led="White"]']],
+    unknown: [[]],
+  };
+  const stuck = [];
+  let walked = 0;
+  for (const h of hosts) {
+    for (const steps of PATHS[h.v]) {
+      await p.reload({waitUntil: 'load'});
+      try {
+        await start(p, h.id);
+        for (const sel of steps) await click(p, sel);
+        await click(p, '[data-clip="none"]');
+        await click(p, '#ack');
+        if (!(await st(p, 'ready()'))) throw new Error('not ready');
+        await click(p, '#addcart');
+        if ((await st(p, 'document.querySelectorAll(".demoout .part").length')) !== (await st(p, 'cartItems().length'))) throw new Error('result list is wrong');
+      } catch (e) { stuck.push(h.n + ' via ' + (steps.join(' ') || 'no extras') + ': ' + e.message); }
+      walked++;
+    }
+  }
+  ok(stuck.length === 0, 'all ' + walked + ' paths across ' + hosts.length + ' finishes reach a finished build', stuck.join(' | '));
+  ok(p.seen.errors.length === 0, 'every finish: no script errors', p.seen.errors.join(' | '));
+  await p.close();
+}
+
 async function landingChecks(browser) {
   const file = path.join(ROOT, '_site', 'index.html');
   if (!fs.existsSync(file)) { ok(false, '_site/index.html exists (run tools/build.py first)'); return; }
@@ -221,6 +266,7 @@ async function landingChecks(browser) {
       if (only !== 'site') await storeChecks(browser, storeFile);
       if (only !== 'store') await demoChecks(browser, demoPage);
     }
+    if (only !== 'store') await everyFinishChecks(browser);
     if (only !== 'store') await landingChecks(browser);
   } finally { await browser.close(); }
   console.log('\n' + passed + ' passed, ' + failed + ' failed');

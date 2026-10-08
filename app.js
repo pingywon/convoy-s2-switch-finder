@@ -39,7 +39,9 @@ function step(n,title,state,note,inner){
 }
 function hostBtn(h,extra){
   return '<button class="pick host'+(extra||'')+'" type="button" data-h="'+h.id+'" aria-pressed="'+
-   (S.host&&S.host.id===h.id)+'"'+(h.oos?' data-oos="1"':'')+'>'+
+   (S.host&&S.host.id===h.id)+'"'+
+   /* a sold-out finish stays on the list (its verdict is still useful) but cannot start a build */
+   (h.oos?' data-oos="1" disabled title="Sold out right now" style="cursor:not-allowed"':'')+'>'+
    '<span class="chip" style="background:'+h.sw+'"></span>'+
    '<span class="pn">'+h.n+(h.oos?' <em>sold out</em>':'')+'</span>'+
    '<span class="cap cap-'+h.v+'">'+(h.v==='full'?'Full switch':h.v==='center'?'Centre only':'Ask us')+'</span></button>';
@@ -293,7 +295,8 @@ function render(){
     '<p class="s2ver" style="margin:22px 0 0;text-align:center;font-family:var(--mono);font-size:12.5px;'+
     'color:var(--ink3)">Switch Finder v'+VER+(DEMO?' &middot; demo copy':'')+'</p>'+
     '<div class="bar'+(L.length?' on':'')+'"><div class="barin"><div class="bartxt">'+
-    (rdy?'<b>'+L.length+' item'+(L.length>1?'s':'')+' ready</b><span>Total shown at checkout</span>'
+    (rdy?'<b>'+L.length+' item'+(L.length>1?'s':'')+' ready</b><span>'+
+          (DEMO?'Demo copy · nothing is ordered here':'Total shown at checkout')+'</span>'
         :'<b>Keep going</b><span>'+(!h?'Pick your light to start':'Finish the highlighted step')+'</span>')+
     '</div>'+(rdy?'<button class="cta" type="button" id="addcart">Add to cart &rarr;</button>'
         :'<button class="cta" type="button" disabled>Add to cart</button>')+'</div></div>';

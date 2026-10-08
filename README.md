@@ -77,5 +77,5 @@ Properties carry no price. Any emitter or optic upcharge is still handled by han
 ## Known gaps
 
 - Ti Purple Swirl is on neither list. Marked as not documented, not guessed.
-- Sold-out Ti Green Circuit can still be picked and ends on a disabled button.
+- Sold out is a hand-set flag (`oos:true` in `core.js`), not a live stock check. A flagged finish is shown but cannot start a build. Today that is Ti Green Circuit.
 - Whether the 18350 short tube changes switch fit is not documented.
