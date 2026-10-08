@@ -1,156 +1,81 @@
 # Convoy S2+ Switch Finder
 
-Interactive fitment guide: tells a Convoy S2+ owner whether their host **can take a tail-switch
-swap**, then walks them to the right in-stock parts on gadgetconnections.com.
+Tells a Convoy S2+ owner which tail switch their light can take, then builds a parts list that fits.
 
-![Storefront](docs/storefront-live.png)
+**Live demo: https://pingywon.github.io/convoy-s2-switch-finder/**
 
-## Why this exists
+![The switch step, with lit previews](site-src/img/guided.png)
 
-About half the S2+ lineup ships with a **pressure-fit tail** that cannot be removed. The split
-does not follow price or material — it runs *through* the Titanium line, which is the fact
-customers most reliably get wrong.
+## The rule it encodes
+
+About half the S2+ finishes have a tail that is pressed in at the factory. The split does not follow
+price or material. It runs straight through the Titanium line.
 
 | | Count | Finishes |
 |---|---|---|
-| **Accepts a swap** | 10 | Black · Gray · Golden · MAO (Stone White) · Cu (Copper) · Brass · Ti Glossy · Ti Stone Washed · Ti Gold Circuit · Ti Multi-Color Circuit |
-| **Pressure-fit — cannot** | 10 | Blue · Green · Red · Orange · Purple · Tan · Silver · Cyan · Ti Multi-Color Spatter · Ti Green Circuit |
-| **Undocumented** | 1 | Ti Purple Swirl |
+| **Whole switch swaps** | 10 | Black · Gray · Golden · MAO (Stone White) · Cu (Copper) · Brass · Ti Glossy · Ti Stone Washed · Ti Gold Circuit · Ti Multi-Color Circuit |
+| **Centre button only** (pressed-in) | 10 | Blue · Green · Red · Orange · Purple · Tan · Silver · Cyan · Ti Multi-Color Spatter · Ti Green Circuit |
+| **Not documented** | 1 | Ti Purple Swirl |
 
-Other hard rules encoded here:
-
-- A compatible host takes **exactly one** of: Rubber Illuminated, Metal Illuminated, Forward Clicky.
-- **Illuminated and Forward Clicky are mutually exclusive** — no illuminated forward clicky exists.
-- Rubber shows more light than metal. Metal has a swappable centre button.
-- Reverse clicky: full click on, tap to change modes, slight delay.
-  Forward clicky: half-press momentary, full click to stay on.
+- A light that takes a switch takes exactly one: Rubber Illuminated, Metal Illuminated or Forward Clicky.
+- There is no illuminated forward clicky.
+- The clear outer ring comes as part of the metal lit switch. Metal switch + Clear Plastic centre = **Double Clear**.
+- A pressed-in finish keeps its ring, but can take the metal lit switch + clear centre **as a pair** to light the middle.
+- Rubber and forward-clicky builds take a rubber tailcap button. `Translucent / White` passes the most light. `Green` does not glow.
+- The lit tail is a locator for finding the light in the dark. It is not a light source.
+- The reflector is suggested from the emitter and never forced.
 
 ## Files
 
 | File | What it is |
 |---|---|
-| `index.html` | Standalone build — light **and** dark themes. Used for the Claude artifact and the LAN copy. |
-| `core.js` | **Shared data + rule engine** — hosts, switches, buttons, variant IDs, and the glow/cart logic. All three builds inline this. |
-| `app.js` | **Shared UI** — progressive steps that lock/dim, and the sticky cart bar. |
-| `data.js` | Source-of-truth data: hosts, verdicts, parts, prices, stock, product handles. |
-| `parts.json` | Original catalogue inventory scaffold. |
-| `storefront-v2-guided.html` | **Take 2 — Guided.** One question per screen, progress rail, 84px buttons at 22px type. Narrows 22 finishes to 3 material choices first. |
-| `storefront-v3-board.html` | **Take 3 — Board.** Both answers visible up front in two colour-coded columns; clicking opens a detail panel. No funnel. |
+| `core.js` | Data and rules: finishes, switches, buttons, variant IDs, what glows, what goes in the cart. |
+| `app.js` | The screens: steps that unlock in order, and the Add to cart bar. |
+| `storefront-v1-console.html` `-v2-guided.html` `-v3-board.html` | Three layouts of the same builder, as Shopify page bodies. **Generated.** |
+| `site-src/` | Landing page and page wrapper for the public demo. |
+| `tools/build.py` | Stamps the version, pastes `core.js` + `app.js` into the three page bodies, writes the demo site to `_site/`. |
+| `tools/check.cjs` | Drives every page in headless Chromium with real clicks. |
+| `tools/publish.sh` | Build, test, push `_site/` to the `gh-pages` branch. |
+| `VERSION` | The one place the version number lives. It is shown at the bottom of every page. |
+| `theme/`, `cart-demo-page.html` | Cart template that draws one build as a single block, and a page that loads a sample cart. |
+| `index.html`, `data.js`, `parts.json` | The first standalone fit check. Superseded. Prices in it are an August 2026 snapshot. |
 
-All three builds read the same `HOSTS`/`SWITCHES` data block, so a data fix propagates by copying
-that block — it is duplicated inline in each file (Shopify page bodies cannot share an include).
+## Change something
 
-## Where it's deployed
-
-| Surface | URL |
-|---|---|
-| Storefront (**unlinked test page**) | `/pages/convoy-s2-switch-finder` — Page id `gid://shopify/Page/157247963451` |
-| v2 &mdash; Guided (**unlinked**) | `/pages/convoy-s2-switch-finder-v2-guided` — Page id `gid://shopify/Page/157248454971` |
-| v3 &mdash; Board (**unlinked**) | `/pages/convoy-s2-switch-finder-v3-board` — Page id `gid://shopify/Page/157248487739` |
-| LAN | `http://192.168.13.131/s2-switch-guide/` |
-| Artifact | `https://claude.ai/code/artifact/103af8ab-b680-4861-82b1-c213e6787534` |
-
-The original `/pages/convoy-s2-faq` is **untouched** and still linked in nav as
-"S2+ FAQ - READ 1st!". Whether the finder replaces it is an open decision.
-
-## Storefront gotchas (these cost real time — read before editing)
-
-1. Shopify page bodies **do** execute `<script>` and `<style>`.
-2. The theme rule `#section-…__main div { color:#d4d6db }` uses **ID specificity** and overrides
-   class selectors. Everything is wrapped in `<div id="s2fit">` and every rule is prefixed
-   `#s2fit .x` so ID+class outranks ID+element.
-3. `.gc-static-page` is capped at **max-width:768px**. The breakout uses
-   `margin-left:calc(50% - min(590px,47vw))` — **never** `transform:translateX()`, which creates a
-   containing block and silently kills `position:sticky` on the build sheet.
-4. `--sans:inherit` picks up the theme's display face.
-
-## Known data gaps
-
-- **Ti Purple Swirl** appears on neither compatibility list. Marked undocumented, not guessed.
-- No published reason *why* pressure-fit hosts differ.
-- Whether the 18350 short tube affects switch fit is undocumented.
-
-## Catalogue discrepancies found
-
-The published FAQ page **understates live inventory**:
-
-- LED colours: page lists 5, store stocks **8** (Pink, White, Purple missing from the page).
-- Metal centre buttons: page says Silver/Black, store sells **12** finishes (11 @ $0.99 + brass @ $1.99).
-
-`data.js` is built from the live catalogue, so it is correct; the old page is not.
-
-## Button & glow rules (the part that is easy to get wrong)
-
-- **Any metal button** can be replaced with `convoy-black-button-for-metal-illuminated-switch`.
-- **Pressure-fit hosts are NOT a dead end** — the whole switch will not come out, but the **centre
-  button still swaps**. Earlier versions of this guide wrongly treated them as unfixable.
-- **Double Clear** = clear outer ring **and** clear centre. It needs a host that takes the *full*
-  switch **plus** the metal illuminated switch **plus** the `Clear Plastic` button. Bought together
-  with the light, that is the lit-up Double Clear.
-- **Any other centre button** (silver, black, or any colour) blocks the middle → **edge glow only**.
-- Rubber illuminated takes no metal centre button, but its **rubber tailcap button swaps** via
-  `convoy-color-rubber-tail-cap-buttons-for-s2-c8-and-more` — a second option path.
-- **Rubber button colours differ in glow:** `Translucent / White` passes the most light;
-  `Green` does **not** glow at all. Both are called out in the UI.
-- Forward clicky never lights.
-
-Encoded in `core.js` as `takesButton()`, `canDoubleClear()` and `glow()`; unit-tested across 7
-cases including pressure-fit, sold-out and undocumented hosts.
-
-## What the glow is for
-
-The lit tail is a **locator** — it marks where the flashlight is on a bedside table or in a bag.
-It does not light a room, and the guide says so plainly rather than overselling it. Colour affects
-how easy it is to spot.
-
-## Custom-build options in the walkthrough
-
-The S2+ has **no emitter option anywhere**: `convoy-s2` exposes one Shopify option (`Color`, 11
-values), the installed YMQ Product Options app renders only `Color`, and the live product page has
-zero `properties[...]` inputs. Emitter selection has been happening by conversation, not by cart.
-
-Route A adds it **in the builder only**, as Shopify **line-item properties**:
-
-```js
-{ id: <hostVariantId>, quantity: 1,
-  properties: { "Emitter": "Nichia 519A",
-                "Colour temperature": "4500K",
-                "Reflector": "Orange peel (matched to emitter)" } }
+```sh
+# edit core.js or app.js, bump VERSION, then:
+python3 tools/build.py
+PUPPETEER=/path/to/node_modules/puppeteer-core node tools/check.cjs
+bash tools/publish.sh          # public demo only; the store pages are pasted in by hand
 ```
 
-Properties cannot ride a cart permalink, so the CTA POSTs to `/cart/add.js`. That only works
-because the builder is hosted on the storefront (same origin); it falls back to the permalink if
-the POST fails, which silently drops the emitter note.
+Never edit the script inside a `storefront-*.html` file. The build overwrites it.
 
-**Reflector is derived, never asked** — smooth for SST20/SST40/SFT40/XP-L HI/OSRAM, orange peel for
-219B/219C/519A/719A/B35AM/LH351D, straight from the product's own `spec_table`.
+## How the cart works
 
-**The option set is transcribed read-only from the live S2+ custom-build option set** (22 emitters,
-26 optics, 3 reflectors, plus the required non-returnable acknowledgement). Value strings are kept
-verbatim so a builder order reads the same as one placed through the product page. This is our own
-implementation with our own property keys — it does not hook, extend or depend on the options app.
+On the store, Add to cart posts every part to `/cart/add.js` with **line-item properties**, so the
+build note travels with the order:
 
-**Nothing outside the three unlinked pages is touched:** no listing, no PDP, no option template.
-Verified after every deploy — `convoy-s2` still reads `updatedAt 2026-08-08T05:11:01Z`, options
-`['Color']`, and the `ymq_option` metafield is untouched at `2026-04-12`.
+- **The light:** `Emitter` / `Reflector` / `Optic / lens` / `Please fit` / `Agreed`
+- **Each accessory:** `Part`
+- **Every line:** hidden `_gc_build`, `_gc_light`, `_gc_role`, which the cart template uses to group one build together
 
-**Line-item properties carry no price**, so any option upcharge remains manual.
+A cart permalink cannot carry properties, so there is no permalink fallback. If the cart does not
+answer, the page says nothing was added and lets the customer try again.
 
-**No product listing was modified to build this.**
+The demo pages set `window.S2_DEMO`. There the button sends nothing and lists what the store would have received.
 
-## Add to cart
+Properties carry no price. Any emitter or optic upcharge is still handled by hand.
 
-Builds a Shopify cart permalink — `/cart/<variantId>:1,<variantId>:1,…` — so one button loads the
-whole build. That is why `core.js` carries variant IDs, not just product handles. The button stays
-disabled until `ready()` passes (nothing pending, nothing sold out, host documented). **No prices are shown anywhere in the UI** — the cart and product pages are authoritative.
+## Storefront gotchas
 
-## Scope
+1. Shopify page bodies do run `<script>` and `<style>`.
+2. The theme colours text with an ID selector. Everything here sits in `<div id="s2a">` (or `s2b`, `s2c`) and every rule is prefixed with it.
+3. The page column is capped at 768px. The breakout uses `margin-left:calc(50% - min(590px,47vw))`. Never `transform`, which breaks `position:fixed` on the cart bar.
+4. A step marked `data-s="lock"` ignores the mouse. Anything clickable must live in a step that is not locked.
 
-This guide settles **the tail switch only**. Emitter, reflector and lens are options on the S2+
-product page itself — every build says so and links the customer there. Stock counts and running
-totals are deliberately **not** shown: stock moves, and the product page is authoritative.
+## Known gaps
 
-## Updating
-
-Edit `storefront-page.html`, then `pageUpdate` against page id `157247963451`. Prices in `data.js` are a point-in-time snapshot from 2026-08-08. `stock` is still carried in the
-data but is no longer surfaced in any build.
+- Ti Purple Swirl is on neither list. Marked as not documented, not guessed.
+- Sold-out Ti Green Circuit can still be picked and ends on a disabled button.
+- Whether the 18350 short tube changes switch fit is not documented.

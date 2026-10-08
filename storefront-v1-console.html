@@ -366,6 +366,7 @@ var ROOT="s2a-app";var SKIN="grouped";
    Compatibility rules: gadgetconnections.com/pages/convoy-s2-faq
    Variant IDs + prices: live catalogue pull 2026-08-08
    Cart: Shopify permalink /cart/<variantId>:<qty>,...                        */
+var VER="1.1.0";   /* stamped from the VERSION file by tools/build.py — do not edit here */
 var SHOP="https://www.gadgetconnections.com";
 var P=SHOP+"/products/";
 /* verdict: full = whole tail switch swappable | center = centre button only (pressure-fit)
@@ -629,6 +630,9 @@ var ICO={ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
 warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>'};
 var R=document.getElementById(ROOT);
+/* Off the store there is no cart to post to. A page that sets window.S2_DEMO shows what
+   would have been sent instead of sending it. */
+var DEMO=!!window.S2_DEMO;
 /* Scroll so the section HEADER (number + title) is at the top of the viewport,
    never mid-way through its options — landing mid-list makes people miss steps. */
 function goTo(node){
@@ -640,6 +644,20 @@ function goTo(node){
 }
 function stepEl(n){return R.querySelector('.stp[data-n="'+n+'"]')}
 function e_(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function a_(s){return e_(s).replace(/"/g,'&quot;')}
+function cartSig(){return JSON.stringify(cartItems())}
+/* Demo copy only: the lines the store's cart would have received, as the bench reads them. */
+function demoOut(){
+  var L=lines().filter(function(l){return l.vid&&!l.oos}),C=cartItems();
+  return '<div class="demoout" style="margin-top:16px"><div class="msg msg-plain"><div><b>Demo copy &mdash; nothing was added.</b>'+
+    '<p>On gadgetconnections.com this button puts the lines below in the cart. Each one carries the '+
+    'build tag <b>'+e_(buildTag()||'')+'</b>, so every part stays with its light.</p></div></div>'+
+    '<div class="parts">'+C.map(function(it,i){
+      var p=it.properties||{},rows=[];
+      for(var k in p){if(k.charAt(0)!=='_')rows.push(e_(k)+': '+e_(p[k]))}
+      return '<div class="part"><span class="chip chip-x"></span><span class="pn">'+e_(L[i].n)+
+        '<span class="psub">'+rows.join('<br>')+'</span></span></div>'}).join('')+'</div></div>';
+}
 function el(t){var d=document.createElement('div');d.innerHTML=t;return d}
 function step(n,title,state,note,inner){
   return '<section class="stp" data-s="'+state+'" data-n="'+n+'"><div class="sh"><span class="sn">'+
@@ -740,8 +758,11 @@ function render(){
   out+=step(3,'Shape the beam',b3state,b3note,b3inner);
 
   /* ---- 3. the switch ---- */
-  var s2state = (!h||!S.em||!S.refl||!S.optic)?'lock':(h.v==='full'?(S.sw?'done':'active'):'lock');
-  var s2note = !h?'Pick a light first':(h.v==='center'?'Not available on this finish':(S.sw?S.sw.n:''));
+  /* A locked step ignores the mouse. On a pressed-in finish the ring stays, but this step
+     holds the optional centre-glow pair, so it must stay open. */
+  var s2state = (!h||!S.em||!S.refl||!S.optic)?'lock':(h.v==='full'?(S.sw?'done':'active'):
+                (h.v==='center'?(S.presslit?'done':'open'):'lock'));
+  var s2note = !h?'Pick a light first':(h.v==='center'?(S.presslit?'Centre glow added':'Ring stays · centre glow optional'):(S.sw?S.sw.n:''));
   var s2inner;
   if(!h){ s2inner='<p class="lede">Choose your light above and this unlocks.</p>' }
   else if(!S.em||!S.refl||!S.optic){ s2inner='<p class="lede">Pick your emitter and beam first.</p>' }
@@ -801,20 +822,27 @@ function render(){
          g==='most'?'<span class="star">Brightest</span>':
          g==='none'?'<span class="star star-off">No glow</span>':'')}).join('')+'</div>';
   }else{
-    var dc=canDoubleClear();
+    var dc=canDoubleClear(),isCenter=h&&h.v==='center';
     s4inner=(dc?'<div class="msg msg-plain"><div><b>Two looks, both normal.</b>'+
       '<p>The metal lit switch brings a <b>clear outer ring</b> with it. Pair it with the '+
       '<b>Clear Plastic</b> centre and the middle lights too &mdash; that is Double Clear. Any other '+
       'colour keeps the centre solid so the glow sits in a ring around it. Pick whichever you prefer.</p></div></div>'
+      :isCenter?'<div class="msg msg-plain"><div><b>Cosmetic swap, or add a glow.</b>'+
+      '<p>Your outer ring is pressed in at the factory and already glows on its own &mdash; that does '+
+      'not change no matter which colour you pick here, this is just a cosmetic swap. Want the '+
+      '<b>centre</b> to glow too? Pick <b>Clear Plastic</b> below (or use the &ldquo;Add centre '+
+      'glow&rdquo; button above) and we pair it with the metal lit switch for you &mdash; that pairing '+
+      'is required, a clear centre alone will not light up.</p></div></div>'
       :'<div class="msg msg-plain"><div><b>Centre button only on this finish.</b>'+
       '<p>Your outer ring is pressed in at the factory and stays put, so the glow sits around the edge '+
       'whichever colour you choose. The clear outer ring only comes as part of the metal lit switch, '+
       'which this light cannot take.</p></div></div>')+
      '<div class="pgrid pgrid-s">'+BTN.cols.map(function(c){
-       var isC=c[3]&&dc;
+       var isC=c[3]&&(dc||isCenter),
+           tip=dc?'Clear lets the centre light up as well as the ring.'
+               :'Clear pairs with the metal lit switch so the centre lights up.';
        return optBtn('opt'+(isC?' hastip':''),c[0],c[1],(S.btn&&S.btn[0]===c[0]),
-         'data-btn="'+c[0]+'"'+(isC?' data-tip="Clear lets the centre light up as well as the ring."'
-           +' title="Clear lets the centre light up as well as the ring."':''),'')}).join('')+
+         'data-btn="'+c[0]+'"'+(isC?' data-tip="'+tip+'" title="'+tip+'"':''),'')}).join('')+
        optBtn('opt',BRASSBTN.n,BRASSBTN.sw,(S.btn&&S.btn[0]==='Brass'),'data-btn="Brass"','')+'</div>';
   }
   out+=step(5,s4title,s4state,s4note,s4inner);
@@ -870,20 +898,27 @@ function render(){
        '<div class="ackhead">'+(S.ack?'✓ Acknowledged':'⚠ Read this before you order')+'</div>'+
        '<label class="ackbox"><input type="checkbox" id="ack"'+(S.ack?' checked':'')+'>'+
        '<span>'+CONSENT+'</span></label></div>'+
-     '<div class="nickrow"><label for="nick">Name this build <em>(optional — helps if you are ordering more than one)</em></label>'+
-       '<input type="text" id="nick" maxlength="40" placeholder="e.g. Dad\'s light" value="'+
-       String(S.nick||'').replace(/"/g,'&quot;')+'"></div>'+
-     '<div class="buildtag"><b>Tagged as:</b> '+e_(buildTag()||'—')+
+     '<div class="nickrow"><label for="nick2">Name this build <em>(optional — helps if you are ordering more than one)</em></label>'+
+       '<input type="text" class="nickin" id="nick2" maxlength="40" placeholder="e.g. Dad\'s light" value="'+
+       a_(S.nick||'')+'"></div>'+
+     '<div class="buildtag"><b>Tagged as:</b> <i class="tagv" style="font-style:normal">'+e_(buildTag()||'—')+'</i>'+
        '<span>Every part above carries this tag, so we know which switch and button belong to which light.</span></div>';
+    var cm=(S.cartMsg&&S.cartMsg.sig===cartSig())?S.cartMsg.k:null;
+    if(cm==='err')res+='<div class="msg msg-warn carterr" role="alert" style="margin-top:16px">'+ICO.warn+
+      '<div><b>Not added &mdash; the cart did not answer.</b><p>Nothing was added and nothing was charged. '+
+      'Press Add to cart again. If it keeps happening, message us and we will put the order together with you.</p></div></div>';
+    if(cm==='demo')res+=demoOut();
   }
   out+=step(8,'Your build',rdy?'done':(L.length?'active':'lock'),rdy?'Ready':'',res);
   var intro='<div class="namebox"><label for="nick">Name this build</label>'+
     '<p>Call it anything &mdash; it just keeps every part of this light together, so we know which '+
     'switch and button belong to which. Really useful if you are ordering more than one custom light.</p>'+
-    '<input type="text" id="nick" maxlength="40" placeholder="e.g. Dad&apos;s light" value="'+
-    String(S.nick||'').replace(/"/g,'&quot;')+'">'+
+    '<input type="text" class="nickin" id="nick" maxlength="40" placeholder="e.g. Dad&apos;s light" value="'+
+    a_(S.nick||'')+'">'+
     '</div>';
   R.innerHTML=intro+'<div class="steps">'+out+'</div>'+
+    '<p class="s2ver" style="margin:22px 0 0;text-align:center;font-family:var(--mono);font-size:12.5px;'+
+    'color:var(--ink3)">Switch Finder v'+VER+(DEMO?' &middot; demo copy':'')+'</p>'+
     '<div class="bar'+(L.length?' on':'')+'"><div class="barin"><div class="bartxt">'+
     (rdy?'<b>'+L.length+' item'+(L.length>1?'s':'')+' ready</b><span>Total shown at checkout</span>'
         :'<b>Keep going</b><span>'+(!h?'Pick your light to start':'Finish the highlighted step')+'</span>')+
@@ -892,13 +927,15 @@ function render(){
   wire();
   var ac=document.getElementById('addcart');
   if(ac)ac.addEventListener('click',function(){
+    if(DEMO){S.cartMsg={k:'demo',sig:cartSig()};render();goTo(R.querySelector('.demoout'));return}
     ac.disabled=true;ac.textContent='Adding…';
     fetch('/cart/add.js',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({items:cartItems()})})
       .then(function(r){if(!r.ok)throw 0;bumpBuildNo();window.location='/cart'})
-      .catch(function(){ /* fallback: permalink (drops the emitter note) */
-        var u=cartUrl(); if(u)window.location=u;
-        else{ac.disabled=false;ac.textContent='Add to cart →'} });
+      .catch(function(){
+        /* No permalink fallback: a permalink cannot carry the build note, and a custom
+           build that arrives without its note is worse than no order. Say so; let them retry. */
+        S.cartMsg={k:'err',sig:cartSig()};render();goTo(R.querySelector('.carterr'))});
   });
 }
 function wire(){
@@ -928,13 +965,21 @@ function wire(){
   R.querySelectorAll('[data-clip]').forEach(function(b){b.addEventListener('click',function(){
     var cl=CLIPS.filter(function(x){return x.k===b.dataset.clip})[0];
     S.clip=(S.clip&&S.clip.k===cl.k)?null:cl; render(); if(S.clip)goTo(stepEl(8))})});
-  var nk=document.getElementById('nick');
-  if(nk)nk.addEventListener('input',function(){S.nick=nk.value});
+  /* The name is asked twice (top of page, and beside the build). Both boxes are one value. */
+  var nks=R.querySelectorAll('.nickin');
+  nks.forEach(function(nk){nk.addEventListener('input',function(){
+    S.nick=nk.value;
+    nks.forEach(function(o){if(o!==nk)o.value=nk.value});
+    var tv=R.querySelector('.tagv'); if(tv)tv.textContent=buildTag()||'—'})});
   var ak=document.getElementById('ack');
   if(ak)ak.addEventListener('change',function(){S.ack=ak.checked;render()});
   R.querySelectorAll('[data-sw]').forEach(function(b){b.addEventListener('click',function(){
-    var n=SWITCHES.filter(function(x){return x.id===b.dataset.sw})[0];
-    S.sw=(S.sw&&S.sw.id===n.id)?null:n; S.led=null; if(!takesButton())S.btn=null; render();
+    var n=SWITCHES.filter(function(x){return x.id===b.dataset.sw})[0],was=takesButton();
+    S.sw=(S.sw&&S.sw.id===n.id)?null:n; S.led=null;
+    /* Metal centre buttons and rubber tailcap buttons are different parts. A button picked
+       for one family must not ride along when the switch changes to the other. */
+    if(takesButton()!==was)S.btn=null;
+    render();
     var nx=R.querySelector('.stp[data-s="active"]'); if(nx)nx.scrollIntoView({behavior:'smooth',block:'center'})})});
   R.querySelectorAll('[data-led]').forEach(function(b){b.addEventListener('click',function(){
     var c=S.sw.cols.filter(function(x){return x[0]===b.dataset.led})[0];
@@ -943,7 +988,15 @@ function wire(){
     var k=b.dataset.btn,c;
     if(k==='Brass')c=['Brass',BRASSBTN.sw,BRASSBTN.vid,false];
     else c=btnSet().cols.filter(function(x){return x[0]===k})[0];
-    S.btn=(S.btn&&S.btn[0]===c[0])?null:c; render();
+    S.btn=(S.btn&&S.btn[0]===c[0])?null:c;
+    /* Centre glow on a pressed-in finish is a PAIR: metal lit switch + Clear Plastic centre.
+       Keep the two locked together whichever side the customer changes, so the build can
+       never promise a glow it will not deliver (a solid button blocks the light). */
+    if(S.host&&S.host.v==='center'){
+      if(S.btn&&isClear(S.btn[0])){S.presslit=true;S.sw=SWITCHES.filter(function(s){return s.id==='metal'})[0]}
+      else{S.presslit=false;S.sw=null;S.led=null}
+    }
+    render();
     if(S.btn)goTo(stepEl(S.sw&&S.sw.cols.length?6:7))})});
 }
 render();
