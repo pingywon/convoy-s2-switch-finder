@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Convoy S2+ Switch Finder</title>
+<meta name="description" content="Which tail switch fits your Convoy S2+? Pick your finish and build a parts list that actually fits.">
+<link rel="icon" type="image/svg+xml" href="{{FAVICON}}">
+<style>
+:root{--bg:#070d13;--sf:#0d151d;--sf2:#141f2a;--ln:#243543;--ink:#f3f7fa;--ink2:#adbecb;--ink3:#8194a3;
+ --ac:#9aa8ff;--ok:#00ff9f;--wn:#ffb84d;
+ --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+html{background:var(--bg);color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--ink);line-height:1.5;font-size:18px;-webkit-text-size-adjust:100%;
+ font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:56px 16px 40px}
+.kick{font-family:var(--mono);font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--ok);margin:0 0 14px}
+h1{font-size:clamp(34px,6vw,58px);line-height:1.02;letter-spacing:-.03em;font-weight:800;margin:0 0 18px;text-wrap:balance}
+.lede{font-size:20px;color:var(--ink2);max-width:60ch;margin:0}
+.lede b{color:var(--ink);font-weight:700}
+
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:40px 0 0;padding:0;list-style:none}
+.rules li{display:flex;align-items:center;gap:16px;padding:18px;border:2px solid var(--ln);border-radius:10px;background:var(--sf)}
+.rules .n{font-family:var(--mono);font-size:34px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.rules .t{font-size:15.5px;color:var(--ink2);line-height:1.35}
+.rules .t b{display:block;color:var(--ink);font-size:17px}
+.tail{flex:0 0 56px;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;
+ background:#1c2832;border:5px solid #33414d}
+.tail i{width:22px;height:22px;border-radius:50%;background:#33414d}
+.tail-full{border-color:var(--ok);box-shadow:0 0 16px -2px var(--ok)}
+.tail-full i{background:var(--ok);box-shadow:0 0 12px var(--ok)}
+.tail-centre{border-color:#33414d}
+.tail-centre i{background:var(--ac);box-shadow:0 0 12px var(--ac)}
+.tail-ask{border-style:dashed;border-color:var(--wn)}
+.tail-ask i{background:transparent;border:2px dashed var(--wn)}
+.c-ok{color:var(--ok)}.c-ac{color:var(--ac)}.c-wn{color:var(--wn)}
+
+h2{font-size:26px;letter-spacing:-.02em;font-weight:800;margin:56px 0 6px}
+.sub{font-size:17px;color:var(--ink2);margin:0 0 20px;max-width:62ch}
+.takes{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.take{display:flex;flex-direction:column;border:2px solid var(--ln);border-radius:10px;background:var(--sf);
+ overflow:hidden;color:inherit;text-decoration:none;transition:border-color .15s,transform .15s}
+.take:hover{border-color:var(--ac);transform:translateY(-2px)}
+.take:focus-visible{outline:3px solid var(--ac);outline-offset:3px}
+.take img{display:block;width:100%;height:auto;aspect-ratio:8/5;object-fit:cover;object-position:top;
+ border-bottom:2px solid var(--ln);background:var(--sf2)}
+.take .b{padding:18px 18px 20px;display:flex;flex-direction:column;gap:6px;flex:1}
+.take .nm{font-size:22px;font-weight:800;letter-spacing:-.015em}
+.take .ds{font-size:16px;color:var(--ink2);flex:1}
+.take .go{font-family:var(--mono);font-size:14px;color:var(--ok);margin-top:8px}
+
+.note{margin:40px 0 0;padding:16px 18px;border:1px solid var(--ln);border-radius:8px;background:var(--sf2);
+ font-size:16px;color:var(--ink2);max-width:76ch}
+.note b{color:var(--ink)}
+a.t{color:var(--ac);text-decoration:none}a.t:hover{text-decoration:underline}
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--ln);font-family:var(--mono);font-size:13px;
+ color:var(--ink3);display:flex;flex-wrap:wrap;gap:6px 22px}
+@media (max-width:860px){.rules,.takes{grid-template-columns:1fr}.wrap{padding-top:36px}}
+@media (prefers-reduced-motion:reduce){.take{transition:none}.take:hover{transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kick">// Convoy S2+ · Switch finder</p>
+  <h1>Which tail switch fits your Convoy&nbsp;S2+?</h1>
+  <p class="lede">It depends on the finish. About half of them have a tail that is <b>pressed in at the factory</b>,
+    and those can only change the centre button. Pick your light and the builder only offers parts that fit it.</p>
+
+  <ul class="rules">
+    <li><span class="tail tail-full"><i></i></span><span class="n c-ok">10</span>
+      <span class="t"><b>Whole switch swaps</b>Rubber lit, metal lit or forward clicky.</span></li>
+    <li><span class="tail tail-centre"><i></i></span><span class="n c-ac">10</span>
+      <span class="t"><b>Centre button only</b>The ring is pressed in and stays.</span></li>
+    <li><span class="tail tail-ask"><i></i></span><span class="n c-wn">1</span>
+      <span class="t"><b>Not documented</b>Ti Purple Swirl. Ask before buying a switch.</span></li>
+  </ul>
+
+  <h2>Three takes on the same builder</h2>
+  <p class="sub">Same rules and same parts underneath. Only the layout changes.</p>
+  <div class="takes">
+    <a class="take" href="console.html">
+      <img src="img/console.png" width="1200" height="750" alt="Console take: light finishes grouped by material">
+      <span class="b"><span class="nm">Console</span>
+        <span class="ds">Compact. Finishes grouped by material, every step on one page.</span>
+        <span class="go">Open &rarr;</span></span></a>
+    <a class="take" href="guided.html">
+      <img src="img/guided.png" width="1200" height="750" alt="Guided take: three switch choices with lit previews">
+      <span class="b"><span class="nm">Guided</span>
+        <span class="ds">The same steps with bigger type and bigger buttons.</span>
+        <span class="go">Open &rarr;</span></span></a>
+    <a class="take" href="board.html">
+      <img src="img/board.png" width="1200" height="750" alt="Board take: finishes in two columns by what they can take">
+      <span class="b"><span class="nm">Board</span>
+        <span class="ds">Finishes sorted into two columns by what they can take.</span>
+        <span class="go">Open &rarr;</span></span></a>
+  </div>
+
+  <p class="note"><b>This is a demo copy.</b> Part names link to
+    <a class="t" href="https://www.gadgetconnections.com/" rel="noopener">gadgetconnections.com</a>.
+    The Add to cart button shows what the store would receive. Nothing is ordered here.</p>
+
+  <footer><span>Convoy S2+ Switch Finder v{{VERSION}}</span>
+    <a class="t" href="https://github.com/pingywon/convoy-s2-switch-finder" rel="noopener">Source on GitHub</a></footer>
+</div>
+</body>
+</html>

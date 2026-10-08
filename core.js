@@ -2,6 +2,7 @@
    Compatibility rules: gadgetconnections.com/pages/convoy-s2-faq
    Variant IDs + prices: live catalogue pull 2026-08-08
    Cart: Shopify permalink /cart/<variantId>:<qty>,...                        */
+var VER="1.1.1";   /* stamped from the VERSION file by tools/build.py — do not edit here */
 var SHOP="https://www.gadgetconnections.com";
 var P=SHOP+"/products/";
 /* verdict: full = whole tail switch swappable | center = centre button only (pressure-fit)
