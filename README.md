@@ -4,6 +4,8 @@ Tells a Convoy S2+ owner which tail switch their light can take, then builds a p
 
 **Live demo: https://pingywon.github.io/convoy-s2-switch-finder/**
 
+**Straight into the builder: https://switch-finder-demo.pingywon.workers.dev/board** (the same demo on a Cloudflare Worker, published with `deploy/worker/publish.sh`)
+
 ![The switch step, with lit previews](site-src/img/guided.png)
 
 ## The rule it encodes

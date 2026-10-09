@@ -3,3 +3,6 @@ docs/*.zip
 .DS_Store
 .claude/
 _site/
+
+# Built by deploy/worker/publish.sh
+deploy/worker/site/
